@@ -1,0 +1,59 @@
+/*
+ * @NOTE: Prepend a `~` to css file paths that are in your node_modules
+ *        See https://github.com/webpack-contrib/sass-loader#imports
+ */
+
+@font-face {
+    font-family: 'Inter-Regular';
+    src: url(./assets/Inter-Regular.ttf)
+}
+@font-face {
+    font-family: 'Inter-Bold';
+    src: url(./assets/Inter-Bold.ttf)
+}
+@font-face {
+    font-family: 'Inter-SemiBold';
+    src: url(./assets/Inter-SemiBold.ttf)
+}
+@font-face {
+    font-family: 'Inter-Medium';
+    src: url(./assets/Inter-Medium.ttf)
+}
+@font-face {
+    font-family: 'Inter-Light';
+    src: url(./assets/Inter-Light.ttf)
+}
+body {
+  position: relative;
+  color: rgb(19, 19, 19);
+  font-family: Inter-Regular;
+  margin: 0;
+}
+
+.header {
+  -webkit-user-select: none;
+  -webkit-app-region: drag;
+  width: 100%;
+  min-height: 60px;
+  padding: 10px 10px 5px 10px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #E2E2E2;
+
+}
+.header-right {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  -webkit-app-region: no-drag;
+}
+.header-right > img {
+  user-select: none;
+  cursor: pointer;
+}
+.header-right > img:nth-child(1) {
+  margin-right: 10px;
+}
