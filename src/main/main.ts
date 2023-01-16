@@ -11,10 +11,9 @@
 import path from 'path';
 import { app, BrowserWindow, shell, ipcMain } from 'electron';
 import { autoUpdater } from 'electron-updater';
+import { promises as fs } from 'fs';
 import log from 'electron-log';
 import si from 'systeminformation';
-// import { getAllInstalledSoftware } from 'fetch-installed-software';
-// import isItInstalled from 'isitinstalled';
 import MenuBuilder from './menu';
 import { resolveHtmlPath } from './util';
 
@@ -28,25 +27,43 @@ class AppUpdater {
 
 let mainWindow: BrowserWindow | null = null;
 
-ipcMain.on('ipc-example', async (event) => {
-  const system = await si.system();
-  const osInfo = await si.osInfo();
-  const cpu = await si.cpu();
-  const mem = await si.mem();
-  const graphics = await si.graphics();
+ipcMain.on('lab-inspection', async (event) => {
+  const all = await si.getAllData();
+  const installedApps = {
+    chrome: false,
+    filmora: false,
+    paint: false,
+    paint3d: false,
+    notepad: false,
+    msAccess: false,
+  };
   try {
-    // const a = await getAllInstalledSoftware();
-    // const b = await isItInstalled('Vs Code');
+    // const files = await fs.readdir('C://Program Files/WindowsApps');
+    // C://Users/Hp/AppData/Local/Wondershare
+    const windowsApps = await fs.readdir('../');
+    const programFiles = await fs.readdir('../');
+    const filmoraDir = await fs.readdir('../');
+    if (windowsApps && windowsApps.length) {
+      windowsApps.forEach((e) => {
+        if (e.includes('Paint')) installedApps.paint3d = true;
+        if (e.includes('MSPaint')) installedApps.paint = true;
+        if (e.includes('Notepad')) installedApps.notepad = true;
+      });
+    }
+    if (programFiles && programFiles.length) {
+      if (programFiles.find((e) => e.includes('Chrome')))
+        installedApps.chrome = true;
+    }
+    if (
+      filmoraDir &&
+      filmoraDir.length &&
+      filmoraDir.some((dir) => dir.includes('Wondershare'))
+    )
+      installedApps.filmora = true;
   } catch (e) {
     console.log(e);
   }
-  event.reply('ipc-example', {
-    system,
-    osInfo,
-    cpu,
-    mem,
-    graphics,
-  });
+  event.reply('lab-inspection', { systemInfo: all, installedApps });
 });
 
 ipcMain.on('browser_window', async (_event, arg) => {

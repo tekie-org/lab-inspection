@@ -169,7 +169,7 @@ const ConfigureLab = () => {
     fetchSchools();
   }, []);
 
-  const currentPageConfiguration = ConfigureLabPages[currentPage];
+  const currentPageConfiguration = ConfigureLabPages[2];
   return (
     <>
       {currentPageConfiguration.Component}

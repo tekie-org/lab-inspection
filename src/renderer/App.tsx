@@ -45,24 +45,6 @@ const Header = () => {
 const Main = () => {
   const [system, setSystem] = React.useState({ osInfo: {} });
 
-  const formatBytes = (bytes: any, decimals = 2) => {
-    if (!+bytes) return '0 Bytes';
-
-    const k = 1024;
-    const dm = decimals < 0 ? 0 : decimals;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
-
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-
-    // eslint-disable-next-line no-restricted-properties
-    return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`;
-  };
-
-  window.electron.ipcRenderer.once('ipc-example', (arg: any) => {
-    // eslint-disable-next-line no-console
-    console.log('asfasf', arg);
-    setSystem(arg);
-  });
   return (
     <>
       <Header />
