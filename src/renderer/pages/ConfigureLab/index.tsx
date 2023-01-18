@@ -298,7 +298,7 @@ const ConfigureLab = () => {
           addLabInspection(input:{
             ${labConfigurationString || ''}
             labName: "${selectedLab?.label}"
-            inpectionDate: "${new Date().toISOString()}"
+            inspectionDate: "${new Date().toISOString()}"
           }, schoolConnectId:"${selectedSchoolData?.id}") {
             id
             labName
@@ -372,6 +372,7 @@ const ConfigureLab = () => {
           input: {
             serialNo: ${parseInt(selectedComputerSrNo?.label, 10)},
             uniqueDeviceId: "${inspectionData?.allSystemInfo?.system?.uuid}",
+            inspectionMode: "${navigator.onLine ? 'online' : 'offline'}",
             status: "${inspectionData?.status}",
             ${firewallChecks}
             ${softwareApplicationChecks}
