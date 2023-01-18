@@ -20,24 +20,26 @@
   box-sizing: border-box;
 
 }
-.disabled {
-  cursor: not-allowed;
-  user-select: none;
-  background-color: #A8A7A7 !important;
-}
-
 .secondary-button {
   background-color: transparent !important;
   border: 1px solid #8C61CB;
   color: #8C61CB;
 }
+.disabled {
+  cursor: not-allowed;
+  user-select: none;
+  color: #FFF;
+  border-color: #FFF;
+  background-color: #A8A7A7 !important;
+}
+
 
 .configure-lab-container {
   width: 100%;
   height: 100vh;
-  padding: 35px 30px;
+  padding: 25px 30px;
   overflow: scroll;
-  padding-bottom: 150px;
+  padding-bottom: 190px;
   box-sizing: border-box;
 }
 
@@ -151,6 +153,12 @@
       color: #282828;
       margin-bottom: 10px;
       margin-top: 0px;
+      text-transform: capitalize;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      -o-text-overflow: ellipsis;
+      width: 120px;
     }
 
     & .preview-status-compatible {
@@ -250,7 +258,7 @@ th {
   border-width: 0px 1px 1px 0px;
   margin: 0px;
 
-   &:nth-last-child(2) {
+   &:nth-child(2) {
     text-align: center;
   }
 
@@ -268,7 +276,7 @@ td {
   font-size: 14px;
   text-transform: capitalize;
 
-  &:nth-last-child(2) {
+  &:nth-child(2) {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -315,4 +323,27 @@ td {
     background-color: #D34B571F;
     color: #D34B57;
   }
+}
+
+.onlineOfflineStrip {
+  width: 100%;
+  padding: auto;
+  height: 38px;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(1, 170, 147, 0.2);
+  color: rgba(0, 133, 115, 1);
+
+  & > img {
+    margin-right: 8px;
+    width: 14px;
+    height: 14px;
+  }
+}
+
+.offlineStrip {
+  background: rgba(211, 75, 87, 0.2) !important;
+  color: rgba(211, 75, 87, 1) !important;
 }

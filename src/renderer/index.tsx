@@ -10,4 +10,4 @@ root.render(<App />);
 //   // eslint-disable-next-line no-console
 //   console.log('asfasf', arg);
 // });
-window.electron.ipcRenderer.sendMessage('lab-inspection', ['ping']);
+// window.electron.ipcRenderer.sendMessage('lab-inspection', ['ping']);

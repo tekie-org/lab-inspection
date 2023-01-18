@@ -46,7 +46,7 @@ const LabInspectionMetaData = ({
               />
             </div>
             <div className="configure-sub-set-container">
-              <span>Avg Number of Students</span>
+              <span>Avg Student Per Class</span>
               <CreatableSelect
                 className="configure-set-dropdown"
                 options={[]}
@@ -69,17 +69,18 @@ const LabInspectionMetaData = ({
               <span>Speakers</span>
               <Select
                 className="configure-set-dropdown"
+                isSearchable={false}
                 options={[
                   {
-                    value: 'Centralised Speaker',
+                    value: 'centralisedSpeaker',
                     label: 'Centralised Speaker',
                   },
                   {
-                    value: 'Headphones',
+                    value: 'headphones',
                     label: 'Headphones',
                   },
                   {
-                    value: 'None',
+                    value: 'none',
                     label: 'None',
                   },
                 ]}
@@ -98,17 +99,18 @@ const LabInspectionMetaData = ({
               <span>Power Backup</span>
               <Select
                 className="configure-set-dropdown"
+                isSearchable={false}
                 options={[
                   {
-                    value: 'Yes',
+                    value: 'yes',
                     label: 'Yes',
                   },
                   {
-                    value: 'No',
+                    value: 'no',
                     label: 'No',
                   },
                   {
-                    value: 'Partial',
+                    value: 'partial',
                     label: 'Partial',
                   },
                 ]}
@@ -129,17 +131,18 @@ const LabInspectionMetaData = ({
           <span>Project Interactive Panel</span>
           <Select
             className="configure-set-dropdown"
+            isSearchable={false}
             options={[
               {
-                value: 'Smart Board',
+                value: 'smartBoard',
                 label: 'Smart Board',
               },
               {
-                value: 'Projector',
+                value: 'projector',
                 label: 'Projector',
               },
               {
-                value: 'None',
+                value: 'none',
                 label: 'None',
               },
             ]}

@@ -16,13 +16,13 @@ const BasicDetails = ({
   onLabChange,
   onComputerSrNoChange,
 }: {
-  schools: Array<School>;
+  schools: Array<any>;
   selectedSchool: { label: string; value: string } | null;
   selectedLab: { label: string; value: string } | null;
   selectedComputerSrNo: { label: string; value: string } | null;
   onSchoolChange: (e: { label: string; value: string } | null) => void;
   onLabChange: (e: { label: string; value: string } | null) => void;
-  onComputerSrNoChange: (e: { label: string; value: string } | null) => void;
+  onComputerSrNoChange: (e: { label: string; value: string }) => void;
 }) => {
   return (
     <div className="configure-lab-container">
@@ -35,6 +35,7 @@ const BasicDetails = ({
           <span>Select School</span>
           <Select
             className="configure-set-dropdown"
+            // isSearchable={false}
             options={
               schools && schools.length
                 ? schools.map((school) => ({
@@ -53,11 +54,20 @@ const BasicDetails = ({
           <span>Select Lab</span>
           <Select
             className="configure-set-dropdown"
-            options={[]}
+            options={
+              schools && schools.length
+                ? schools
+                    .find((school) => school.name === selectedSchool?.label)
+                    ?.labInspections?.map((lab: any) => ({
+                      label: lab.labName,
+                      value: lab.id,
+                    }))
+                : []
+            }
             onChange={(e) => onLabChange(e)}
             value={selectedLab}
             styles={colourStyles}
-            placeholder="Enter Lab Name"
+            placeholder="Type Lab Name"
           />
         </div>
         <div className="configure-set-1">
@@ -66,9 +76,11 @@ const BasicDetails = ({
             className="configure-set-dropdown"
             options={[]}
             value={selectedComputerSrNo}
-            onChange={(e) => onComputerSrNoChange(e)}
+            onChange={(e) =>
+              onComputerSrNoChange(e || { label: '0', value: '0' })
+            }
             styles={colourStyles}
-            placeholder="Enter Computer Serial No."
+            placeholder="Type Computer Serial No."
           />
         </div>
       </div>

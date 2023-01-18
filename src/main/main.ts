@@ -1,3 +1,5 @@
+/* eslint-disable no-restricted-syntax */
+/* eslint-disable no-await-in-loop */
 /* eslint global-require: off, no-console: off, promise/always-return: off */
 
 /**
@@ -14,8 +16,28 @@ import { autoUpdater } from 'electron-updater';
 import { promises as fs } from 'fs';
 import log from 'electron-log';
 import si from 'systeminformation';
+import axios from 'axios';
 import MenuBuilder from './menu';
 import { resolveHtmlPath } from './util';
+
+const { getAllInstalledSoftware } = require('fetch-installed-software');
+
+const firewallChecklinks = [
+  'https://github.com/',
+  'https://www.tekie.in',
+  'https://kahoot.it',
+  'https://fonts.googleapis.com/css2?family=Roboto:ital,wght@1,900&display=swap',
+  'https://figma.com',
+  // 'https://www.canva.com/create/logos/',
+  'https://docs.google.com',
+  'https://code.org/',
+  'https://developers.google.com/blockly',
+  // 'https://replit.com/site/terms',
+  'https://playcode.io/empty_html',
+  'https://filmora.wondershare.com',
+  'https://google.com',
+  'https://mail.google.com',
+];
 
 class AppUpdater {
   constructor() {
@@ -28,6 +50,9 @@ class AppUpdater {
 let mainWindow: BrowserWindow | null = null;
 
 ipcMain.on('lab-inspection', async (event) => {
+  console.log('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~');
+  console.log('~~~~~~~~~~~THIS IS IN PROCESS!~~~~~~~~~~~~~');
+  console.log('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~');
   const all = await si.getAllData();
   const installedApps = {
     chrome: false,
@@ -38,21 +63,16 @@ ipcMain.on('lab-inspection', async (event) => {
     msAccess: false,
   };
   try {
-    // const files = await fs.readdir('C://Program Files/WindowsApps');
-    // C://Users/Hp/AppData/Local/Wondershare
-    const windowsApps = await fs.readdir('../');
-    const programFiles = await fs.readdir('../');
-    const filmoraDir = await fs.readdir('../');
+    const windowsApps = await fs.readdir('C://Program Files/WindowsApps');
+    const filmoraDir = await fs.readdir(
+      'C://Users/Hp/AppData/Local/Wondershare'
+    );
     if (windowsApps && windowsApps.length) {
       windowsApps.forEach((e) => {
         if (e.includes('Paint')) installedApps.paint3d = true;
         if (e.includes('MSPaint')) installedApps.paint = true;
         if (e.includes('Notepad')) installedApps.notepad = true;
       });
-    }
-    if (programFiles && programFiles.length) {
-      if (programFiles.find((e) => e.includes('Chrome')))
-        installedApps.chrome = true;
     }
     if (
       filmoraDir &&
@@ -63,7 +83,33 @@ ipcMain.on('lab-inspection', async (event) => {
   } catch (e) {
     console.log(e);
   }
-  event.reply('lab-inspection', { systemInfo: all, installedApps });
+  try {
+    const programFiles = await getAllInstalledSoftware();
+    if (programFiles && programFiles.length) {
+      if (programFiles.find((e: string) => e.includes('Chrome')))
+        installedApps.chrome = programFiles.find((e: string) =>
+          e.includes('Chrome')
+        );
+    }
+  } catch {
+    console.log('error');
+  }
+  const firewallChecklinksStatus: any[] = [];
+  for (const link of firewallChecklinks) {
+    try {
+      const res = await axios(link);
+      if (res.status === 200)
+        firewallChecklinksStatus.push({ key: link, status: true });
+      else firewallChecklinksStatus.push({ key: link, status: false });
+    } catch {
+      firewallChecklinksStatus.push({ key: link, status: false });
+    }
+  }
+  event.reply('lab-inspection', {
+    systemInfo: all,
+    installedApps,
+    firewallChecklinksStatus,
+  });
 });
 
 ipcMain.on('browser_window', async (_event, arg) => {
