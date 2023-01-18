@@ -526,7 +526,7 @@ const AutomatedInspection = ({
         <Collapsible open header="Software Applications">
           <table>
             <tr>
-              <th>Application</th>
+              <th style={{ width: '50%' }}>Application</th>
               <th>STATUS</th>
               {/* <th>SPECIFICATION</th> */}
             </tr>
@@ -548,7 +548,7 @@ const AutomatedInspection = ({
         <Collapsible open header="Firewall">
           <table>
             <tr>
-              <th>Website&apos;s</th>
+              <th style={{ width: '50%' }}>Website&apos;s</th>
               <th>STATUS</th>
               {/* <th>SPECIFICATION</th> */}
             </tr>
