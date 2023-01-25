@@ -1,3 +1,5 @@
+/* eslint-disable no-await-in-loop */
+/* eslint-disable no-restricted-syntax */
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable no-nested-ternary */
@@ -6,6 +8,7 @@ import './ConfigureLab.scss';
 import React from 'react';
 import base64 from 'base-64';
 import requestToGraphql from 'utils/requestToGraphQL';
+import uploadFile from 'utils/uploadFile';
 import onlineIcon from '../../assets/online.svg';
 import offlineIcon from '../../assets/offline.svg';
 import {
@@ -338,6 +341,13 @@ const ConfigureLab = () => {
       );
       if (!selectedLabData) {
         let labConfigurationString = '';
+        const uploadedFiles = [];
+        for (const file of metaData.mediaFiles) {
+          const uploadedFile = await uploadFile(file, {
+            fileBucket: 'python',
+          });
+          uploadedFiles.push(uploadedFile);
+        }
         if (metaData && metaData.totalComputers) {
           labConfigurationString = `
             labConfiguration:{
@@ -348,9 +358,19 @@ const ConfigureLab = () => {
               projectInteractivePanel: ${metaData?.selectedProjector?.value}
               speakers: ${metaData?.selectedSpeaker?.value}
               powerBackup: ${metaData?.selectedPowerBackup?.value}
-              powerBackupType: ${metaData?.selectedPowerBackup?.value || 'none'}
+              powerBackupType: ${
+                metaData?.selectedPowerBackupType?.value || 'none'
+              }
               internetConnection: ${metaData?.internetMode?.value || 'none'}
             }
+          `;
+        }
+        let mediaFileConnectString = '';
+        if (uploadedFiles?.length) {
+          mediaFileConnectString = `
+            mediaConnectIds: [${uploadedFiles?.map(
+              (file: any) => `"${file?.id}"`
+            )}]
           `;
         }
         const addLabQuery = `
@@ -359,7 +379,9 @@ const ConfigureLab = () => {
               ${labConfigurationString || ''}
               labName: "${selectedLab?.label}"
               inspectionDate: "${new Date().toISOString()}"
-            }, schoolConnectId:"${selectedSchoolData?.id}") {
+            }, schoolConnectId:"${
+              selectedSchoolData?.id
+            }", ${mediaFileConnectString}) {
               id
               labName
             }

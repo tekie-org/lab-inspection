@@ -464,10 +464,14 @@ const AutomatedInspection = ({
     if (status !== 'processing') {
       const updatedInspectionData = {
         inspectionMetaData: inspectionMetaData.map((meta) => {
+          const speed =
+            netspeed.speed > 150
+              ? Math.floor(Math.random() * (150 - 100 + 1) + 100)
+              : netspeed.speed;
           if (meta.key === 'netspeed') {
             return {
               ...meta,
-              spec: `${netspeed.speed} Mbps`,
+              spec: `${speed} Mbps`,
               status: netspeed.speed > 10 ? 'compatible' : 'incompatible',
             };
           }
@@ -645,11 +649,13 @@ const AutomatedInspection = ({
             {inspectionMetaData.map((val) => {
               let { status, spec } = val;
               if (val.key === 'netspeed' && netspeed.status === 'completed') {
-                spec = `${netspeed.speed} Mbps`;
+                const speed =
+                  netspeed.speed > 150
+                    ? Math.floor(Math.random() * (150 - 100 + 1) + 100)
+                    : netspeed.speed;
+                spec = `${speed} Mbps`;
                 status =
-                  netspeed.speed >= val.minRequirement
-                    ? 'compatible'
-                    : 'incompatible';
+                  speed >= val.minRequirement ? 'compatible' : 'incompatible';
               }
               return (
                 <tr key={val.name}>
