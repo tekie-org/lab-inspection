@@ -13,7 +13,7 @@ const Button = ({
     <button
       className={`${classNames} ${isDisabled ? 'disabled' : ''}`}
       type="button"
-      onClick={onClick}
+      onClick={() => !isDisabled && onClick()}
     >
       {title}
     </button>

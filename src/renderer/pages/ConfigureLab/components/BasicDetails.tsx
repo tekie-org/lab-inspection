@@ -1,11 +1,31 @@
+/* eslint-disable no-plusplus */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable no-nested-ternary */
 /* eslint-disable react/prop-types */
 import '../ConfigureLab.scss';
 import React from 'react';
 import Select from 'react-select/creatable';
-import { School } from '../interface';
 import colourStyles from '../styles';
+
+const levenshteinDistance = (s: any, t: any) => {
+  if (!s.length) return t.length;
+  if (!t.length) return s.length;
+  const arr = [];
+  for (let i = 0; i <= t.length; i++) {
+    arr[i] = [i];
+    for (let j = 1; j <= s.length; j++) {
+      arr[i][j] =
+        i === 0
+          ? j
+          : Math.min(
+              arr[i - 1][j] + 1,
+              arr[i][j - 1] + 1,
+              arr[i - 1][j - 1] + (s[j - 1] === t[i - 1] ? 0 : 1)
+            );
+    }
+  }
+  return arr[t.length][s.length];
+};
 
 const BasicDetails = ({
   schools,
@@ -35,19 +55,20 @@ const BasicDetails = ({
           <span>Select School</span>
           <Select
             className="configure-set-dropdown"
-            // isSearchable={false}
             options={
               schools && schools.length
                 ? schools.map((school) => ({
-                    label: school.name,
+                    label: `${school.name} (${school.code.toUpperCase()})`,
                     value: school.id,
                   }))
                 : []
             }
+            // isLoading={navigator.onLine}
+            noOptionsMessage={() => 'Please Enter School Name'}
             onChange={(e) => onSchoolChange(e)}
             value={selectedSchool}
             styles={colourStyles}
-            placeholder="Select an option"
+            placeholder="Enter School Name"
           />
         </div>
         <div className="configure-set-1">
@@ -57,7 +78,7 @@ const BasicDetails = ({
             options={
               schools && schools.length
                 ? schools
-                    .find((school) => school.name === selectedSchool?.label)
+                    .find((school) => school.id === selectedSchool?.value)
                     ?.labInspections?.map((lab: any) => ({
                       label: lab.labName,
                       value: lab.id,
@@ -67,7 +88,7 @@ const BasicDetails = ({
             onChange={(e) => onLabChange(e)}
             value={selectedLab}
             styles={colourStyles}
-            placeholder="Type Lab Name"
+            placeholder="Enter Lab Name"
           />
         </div>
         <div className="configure-set-1">
@@ -80,7 +101,7 @@ const BasicDetails = ({
               onComputerSrNoChange(e || { label: '0', value: '0' })
             }
             styles={colourStyles}
-            placeholder="Type Computer Serial No."
+            placeholder="Enter Computer Serial No."
           />
         </div>
       </div>

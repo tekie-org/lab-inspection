@@ -3,10 +3,10 @@
 /* eslint-disable @typescript-eslint/no-unused-expressions */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 const testConnectionSpeed = [
-  {
-    src: 'https://tekie-production.s3.ap-south-1.amazonaws.com/python/test-image_clcyo8mf611gy0tpd06qr2l4i_1673865397122.jpeg',
-    downloadSize: 10057151,
-  },
+  // {
+  //   src: 'https://tekie-production.s3.ap-south-1.amazonaws.com/python/test-image_clcyo8mf611gy0tpd06qr2l4i_1673865397122.jpeg',
+  //   downloadSize: 10057151,
+  // },
   {
     src: 'https://tekie-production.s3.ap-south-1.amazonaws.com/python/test_clcynjpwm08nj0uq3auehdqb8_1673864235238.jpeg',
     downloadSize: 2707459,
@@ -34,7 +34,7 @@ async function measureConnectionSpeed() {
     await download.decode();
     endTime = new Date().getTime();
     const duration: number = (endTime - startTime) / 1000;
-    const bitsLoaded: number = img.downloadSize * 8;
+    const bitsLoaded: number = (img.downloadSize || 0) * 8;
     const speedBps: number = parseFloat((bitsLoaded / duration).toFixed(2));
     const speedKbps: number = parseFloat((speedBps / 1024).toFixed(2));
     const speedMbps: number = parseFloat((speedKbps / 1024).toFixed(2));

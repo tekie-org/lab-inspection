@@ -1,3 +1,5 @@
+/* eslint-disable jsx-a11y/click-events-have-key-events */
+/* eslint-disable jsx-a11y/no-static-element-interactions */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable no-nested-ternary */
@@ -130,6 +132,29 @@ const softwareApplications: SoftwareApplicationsAndFirewallInterface[] = [
   },
 ];
 
+const manualChecks: SoftwareApplicationsAndFirewallInterface[] = [
+  {
+    name: 'Keyboard',
+    key: 'keyboard',
+    status: 'incompatible',
+  },
+  {
+    name: 'Mouse',
+    key: 'mouse',
+    status: 'incompatible',
+  },
+  {
+    name: 'Canva',
+    key: 'canva',
+    status: 'incompatible',
+  },
+  {
+    name: 'MS Access',
+    key: 'msAccess',
+    status: 'incompatible',
+  },
+];
+
 const firewallRules: SoftwareApplicationsAndFirewallInterface[] = [
   {
     name: 'Github.com',
@@ -214,6 +239,7 @@ const StatusBadgeIcons: {
 };
 
 const AutomatedInspection = ({
+  isSyncSuccess,
   inspectionData,
   currentPage,
   onChangeMetaData,
@@ -221,7 +247,9 @@ const AutomatedInspection = ({
   selectedLab,
   selectedComputerSrNo,
   selectedSchoolData,
+  setCurrentPage,
 }: {
+  isSyncSuccess: boolean;
   inspectionData: {
     inspectionMetaData: object | null;
     softwareApplicationsData: object | null;
@@ -232,11 +260,13 @@ const AutomatedInspection = ({
   selectedComputerSrNo: any;
   selectedSchoolData: any;
   currentPage: number;
+  setCurrentPage: (pageNumber: number) => void;
   onChangeMetaData: (metaData: {
     allSystemInfo: object;
     inspectionMetaData: object;
     softwareApplicationsData: object;
     firewallData: object;
+    manualChecksData: object;
     status: InspectionStatus;
   }) => void;
   metaDataValue: MetaData;
@@ -244,6 +274,8 @@ const AutomatedInspection = ({
   const [metaData, setMetaData] = React.useState<MetaData>(metaDataValue);
   const [inspectionMetaData, setInspectionMetaData] =
     React.useState<InspectionMetaData[]>(basicChecks);
+  const [manualChecksData, setManualChecksData] =
+    React.useState<SoftwareApplicationsAndFirewallInterface[]>(manualChecks);
   const [softwareApplicationsData, setSoftwareApplicationsData] =
     React.useState<SoftwareApplicationsAndFirewallInterface[]>(
       softwareApplications
@@ -276,9 +308,12 @@ const AutomatedInspection = ({
       switch (meta.key) {
         case 'ram': {
           const ramValue = formatBytes(systemInfo?.mem?.total || 0);
+          const availableRamValue = formatBytes(
+            systemInfo?.mem?.available || 0
+          );
           if (ramValue.raw >= meta.minRequirement)
             updatedInspection.status = 'compatible';
-          updatedInspection.spec = ramValue.label;
+          updatedInspection.spec = `Total: ${ramValue?.label}; Available: ${availableRamValue.label}`;
           break;
         }
         case 'processor': {
@@ -294,7 +329,7 @@ const AutomatedInspection = ({
             )
           )
             updatedInspection.status = 'compatible';
-          updatedInspection.spec = processorValue.label;
+          updatedInspection.spec = processorValue?.label;
           break;
         }
         case 'monitor': {
@@ -307,7 +342,7 @@ const AutomatedInspection = ({
             value: systemInfo?.graphics?.displays?.[0]?.size?.width,
           };
           updatedInspection.status = 'compatible';
-          updatedInspection.spec = monitorValue.label;
+          updatedInspection.spec = monitorValue?.label;
           break;
         }
         case 'storage': {
@@ -316,7 +351,7 @@ const AutomatedInspection = ({
           );
           if (storageValue.raw >= meta.minRequirement)
             updatedInspection.status = 'compatible';
-          updatedInspection.spec = storageValue.label;
+          updatedInspection.spec = storageValue?.label;
           break;
         }
         case 'os': {
@@ -417,10 +452,14 @@ const AutomatedInspection = ({
 
   React.useEffect(() => {
     const status: InspectionStatus =
-      netspeed.status === 'completed'
-        ? netspeed.speed >= 10
-          ? inspectionStatus
-          : 'incompatible'
+      inspectionStatus !== 'processing'
+        ? netspeed.status === 'completed'
+          ? netspeed.speed >= 10
+            ? manualChecksData.every((check) => check.status === 'compatible')
+              ? inspectionStatus
+              : 'incompatible'
+            : 'incompatible'
+          : 'processing'
         : 'processing';
     if (status !== 'processing') {
       const updatedInspectionData = {
@@ -436,6 +475,7 @@ const AutomatedInspection = ({
         }),
         softwareApplicationsData,
         firewallData,
+        manualChecksData,
         status,
         allSystemInfo: systemInformation,
       };
@@ -444,15 +484,40 @@ const AutomatedInspection = ({
   }, [inspectionStatus]);
 
   const overallInspectionStatus =
-    netspeed.status === 'completed'
-      ? netspeed.speed >= 10
-        ? inspectionStatus
-        : 'incompatible'
+    inspectionStatus !== 'processing'
+      ? netspeed.status === 'completed'
+        ? netspeed.speed >= 10
+          ? manualChecksData.every((check) => check.status === 'compatible')
+            ? inspectionStatus
+            : 'incompatible'
+          : 'incompatible'
+        : 'processing'
       : 'processing';
 
   return (
     <div className="configure-lab-container">
       <div className="configure-lab-header">
+        <div className="configure-lab-header left-aligned">
+          <h1>Perform Inspection</h1>
+          <div className="breadcrumbs">
+            <span
+              onClick={() => {
+                setCurrentPage(0);
+              }}
+            >
+              Select School
+            </span>{' '}
+            /{' '}
+            <span
+              onClick={() => {
+                setCurrentPage(1);
+              }}
+            >
+              Configure Labs
+            </span>{' '}
+            / <span className="active">Perform Inspection</span>
+          </div>
+        </div>
         <div className="preview-container">
           <div className="preview-set">
             <span>School Name</span>
@@ -462,12 +527,32 @@ const AutomatedInspection = ({
           </div>
           <div className="preview-set">
             <span>Lab</span>
-            <h1>{selectedLab.label}</h1>
+            <h1>{selectedLab?.label || '-'}</h1>
           </div>
           <div className="preview-set">
             <span>Sr. No</span>
-            <h1>{selectedComputerSrNo.label}</h1>
+            <h1>{selectedComputerSrNo?.label || '-'}</h1>
           </div>
+          {navigator.onLine ? (
+            <div className="preview-set">
+              <span>Data Sync</span>
+              <h1
+                className={`preview-status-${
+                  overallInspectionStatus === 'processing'
+                    ? overallInspectionStatus
+                    : isSyncSuccess
+                    ? 'compatible'
+                    : 'incompatible'
+                }`}
+              >
+                {overallInspectionStatus === 'processing'
+                  ? 'Syncing'
+                  : isSyncSuccess
+                  ? 'Synced'
+                  : 'Try Again'}
+              </h1>
+            </div>
+          ) : null}
           <div className="preview-set">
             <span>Inspection Status</span>
             <h1
@@ -492,6 +577,64 @@ const AutomatedInspection = ({
             </h1>
           </div>
         </div>
+        <Collapsible open header="Manual Checks">
+          <table>
+            <tr>
+              <th>Criteria</th>
+              <th>Input</th>
+            </tr>
+            {manualChecksData.map((val) => {
+              const { status } = val;
+              return (
+                <tr key={val.name}>
+                  <td>{val.name}</td>
+                  <td>
+                    <div className="status-toggle">
+                      <span
+                        onClick={() => {
+                          setManualChecksData(
+                            manualChecksData.map((check) => {
+                              if (check.key === val.key) {
+                                return {
+                                  ...check,
+                                  status: 'compatible',
+                                };
+                              }
+                              return check;
+                            })
+                          );
+                        }}
+                        className={status === 'compatible' ? 'active' : ''}
+                      >
+                        Working
+                      </span>
+                      <span
+                        onClick={() => {
+                          setManualChecksData(
+                            manualChecksData.map((check) => {
+                              if (check.key === val.key) {
+                                return {
+                                  ...check,
+                                  status: 'incompatible',
+                                };
+                              }
+                              return check;
+                            })
+                          );
+                        }}
+                        className={
+                          status !== 'compatible' ? 'disabled-active' : ''
+                        }
+                      >
+                        Disabled
+                      </span>
+                    </div>
+                  </td>
+                </tr>
+              );
+            })}
+          </table>
+        </Collapsible>
         <Collapsible open header="Basic Checks">
           <table>
             <tr>

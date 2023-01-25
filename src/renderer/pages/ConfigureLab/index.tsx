@@ -17,11 +17,14 @@ import {
 import { MetaData, StateLabelData } from './interface';
 
 const defaultMetaDataValues = {
-  totalComputers: null,
-  avgNoOfStudents: null,
+  totalComputers: undefined,
+  totalWorkingComputers: undefined,
   selectedSpeaker: null,
   selectedPowerBackup: null,
   selectedProjector: null,
+  internetMode: null,
+  selectedPowerBackupType: null,
+  mediaFiles: [],
 };
 
 const ConfigureLab = () => {
@@ -38,18 +41,21 @@ const ConfigureLab = () => {
     defaultMetaDataValues
   );
   const [isQueryProcessing, setIsQueryProcessing] = React.useState(false);
+  const [isSyncSuccess, setSyncSuccess] = React.useState(false);
   const [inspectionData, setInspectionData] = React.useState<{
     inspectionMetaData: any;
     softwareApplicationsData: any;
     firewallData: any;
     status: 'compatible' | 'processing' | 'incompatible';
     allSystemInfo: any;
+    manualChecksData: any;
   }>({
     inspectionMetaData: null,
     softwareApplicationsData: null,
     firewallData: null,
     status: 'processing',
     allSystemInfo: null,
+    manualChecksData: null,
   });
 
   function arrayToCSV(data: any) {
@@ -106,16 +112,14 @@ const ConfigureLab = () => {
           title="Next"
           isDisabled={!selectedSchool || !selectedLab || !selectedComputerSrNo}
           onClick={() => {
-            if (selectedSchool && selectedLab && selectedComputerSrNo) {
-              const schoolName = selectedSchool.label;
-              const inspectionMetaExists = schools
-                .find((school) => school.name === schoolName)
-                ?.labInspections.find(
-                  (inspection: any) => inspection.labName === selectedLab.label
-                )?.labConfiguration?.totalNumberOfComputers;
-              if (inspectionMetaExists) setCurrentPage(currentPage + 2);
-              else setCurrentPage(currentPage + 1);
-            }
+            const schoolId = selectedSchool?.value;
+            const inspectionMetaExists = schools
+              .find((school) => school.id === schoolId)
+              ?.labInspections.find(
+                (inspection: any) => inspection.labName === selectedLab?.label
+              )?.labConfiguration?.totalNumberOfComputers;
+            if (inspectionMetaExists) setCurrentPage(currentPage + 2);
+            else setCurrentPage(currentPage + 1);
           }}
         />,
       ],
@@ -124,6 +128,7 @@ const ConfigureLab = () => {
       Component: (
         <LabInspectionMetaData
           metaDataValue={metaData}
+          setCurrentPage={(pageNumber) => setCurrentPage(pageNumber)}
           onChangeMetaData={(metaDataValue) => setMetaData(metaDataValue)}
         />
       ),
@@ -147,14 +152,7 @@ const ConfigureLab = () => {
             )
           }
           onClick={() => {
-            const isDisabled =
-              metaData &&
-              Object.keys(metaData).some(
-                (metaName: string) => !metaData[metaName as keyof MetaData]
-              );
-            if (!isDisabled) {
-              setCurrentPage(currentPage + 1);
-            }
+            setCurrentPage(currentPage + 1);
           }}
         />,
       ],
@@ -162,14 +160,16 @@ const ConfigureLab = () => {
     {
       Component: (
         <AutomatedInspection
+          isSyncSuccess={isSyncSuccess}
           inspectionData={inspectionData}
           currentPage={currentPage}
           metaDataValue={metaData}
           selectedLab={selectedLab}
           selectedComputerSrNo={selectedComputerSrNo}
+          setCurrentPage={(pageNumber) => setCurrentPage(pageNumber)}
           selectedSchoolData={
             schools && schools.length
-              ? schools.find((school) => school.name === selectedSchool?.label)
+              ? schools.find((school) => school.id === selectedSchool?.value)
               : { name: selectedSchool?.label }
           }
           onChangeMetaData={(metaDataValue) => setInspectionData(metaDataValue)}
@@ -196,29 +196,75 @@ const ConfigureLab = () => {
           isDisabled={inspectionData.status === 'processing'}
           onClick={() => {
             if (inspectionData && metaData) {
-              const combinedData = {
+              let combinedData = {
                 schoolName: selectedSchool?.label,
                 labName: selectedLab?.label,
-                labConfiguration: base64.encode(JSON.stringify(metaData)),
                 serialNo: selectedComputerSrNo?.label,
                 uniqueDeviceId: inspectionData?.allSystemInfo?.system?.uuid,
                 status: inspectionData?.status,
-                firewallChecks: inspectionData?.firewallData
-                  ? base64.encode(JSON.stringify(inspectionData?.firewallData))
-                  : null,
-                softwareApplicationChecks:
-                  inspectionData?.softwareApplicationsData
-                    ? base64.encode(
-                        JSON.stringify(inspectionData?.softwareApplicationsData)
-                      )
-                    : null,
-                basicChecks: inspectionData?.inspectionMetaData
-                  ? base64.encode(
-                      JSON.stringify(inspectionData?.inspectionMetaData)
-                    )
-                  : null,
-                date: new Date().toISOString(),
+                inspectionDate: new Date().toISOString(),
               };
+              if (
+                inspectionData?.firewallData &&
+                inspectionData?.firewallData?.length
+              ) {
+                inspectionData?.firewallData.forEach((links: any) => {
+                  combinedData = {
+                    ...combinedData,
+                    [links?.name]: links?.status,
+                  };
+                });
+              }
+              if (
+                inspectionData?.softwareApplicationsData &&
+                inspectionData?.softwareApplicationsData?.length
+              ) {
+                inspectionData?.softwareApplicationsData.forEach(
+                  (applications: any) => {
+                    combinedData = {
+                      ...combinedData,
+                      [applications?.key]: applications?.status,
+                    };
+                  }
+                );
+              }
+              if (
+                inspectionData?.manualChecksData &&
+                inspectionData?.manualChecksData?.length
+              ) {
+                inspectionData?.manualChecksData.forEach((manualCheck: any) => {
+                  combinedData = {
+                    ...combinedData,
+                    [manualCheck?.key]: manualCheck?.status,
+                  };
+                });
+              }
+              if (
+                inspectionData?.inspectionMetaData &&
+                inspectionData?.inspectionMetaData?.length
+              ) {
+                inspectionData?.inspectionMetaData.forEach(
+                  (metaDataKey: any) => {
+                    combinedData = {
+                      ...combinedData,
+                      [metaDataKey?.key]: `${metaDataKey?.status} || ${metaDataKey.spec}`,
+                    };
+                  }
+                );
+              }
+              Object.keys(metaData).forEach((configuration: any) => {
+                if (configuration === 'mediaFiles') return;
+                let configurationValue =
+                  metaData[configuration as keyof MetaData];
+                if (configurationValue?.value) {
+                  configurationValue = configurationValue?.value;
+                }
+                combinedData = {
+                  ...combinedData,
+                  [configuration]: configurationValue,
+                };
+              });
+              console.log('BWER', combinedData);
               const csvData = arrayToCSV([combinedData]);
               let fileName = `${selectedSchool?.label}-${selectedLab?.label}-Sr No ${selectedComputerSrNo.label}`;
               fileName = fileName.split(' ').join('_').toLowerCase();
@@ -239,13 +285,13 @@ const ConfigureLab = () => {
           schools {
             id
             name
+            code
             labInspections {
               id
               labName
               description
               labConfiguration {
                 totalNumberOfComputers
-                avgNumberOfStudents
                 projectInteractivePanel
                 speakers
                 powerBackup
@@ -268,133 +314,155 @@ const ConfigureLab = () => {
 
   const addOrUpdateInspectionData = async () => {
     setIsQueryProcessing(true);
-    const selectedSchoolData = schools.find(
-      (school) => school.name === selectedSchool?.label
+    let selectedSchoolData = schools.find(
+      (school) => school.id === selectedSchool?.value
     );
-    let selectedLabData = selectedSchoolData?.labInspections.find(
-      (inspection: any) => inspection.labName === selectedLab?.label
-    );
-    if (!selectedLabData) {
-      let labConfigurationString = '';
-      if (metaData && metaData.totalComputers) {
-        labConfigurationString = `
-          labConfiguration:{
-            totalNumberOfComputers: ${parseInt(
-              metaData?.totalComputers?.value || '0',
-              10
-            )}
-            avgNumberOfStudents: ${parseInt(
-              metaData?.avgNoOfStudents?.value || '0',
-              10
-            )}
-            projectInteractivePanel: ${metaData?.selectedProjector?.value}
-            speakers: ${metaData?.selectedSpeaker?.value}
-            powerBackup: ${metaData?.selectedPowerBackup?.value}
+    if (!selectedSchoolData && false) {
+      const addSchoolQuery = `
+        mutation {
+          addSchool(
+            name: "${selectedSchool?.label}"
+            code: "${selectedSchool?.label}"
+          ) {
+            id
+            name
+            code
+          }
+      `;
+      const addSchoolResponse = await requestToGraphql(addSchoolQuery, {});
+      selectedSchoolData = addSchoolResponse?.data?.addSchool;
+    }
+    if (selectedSchoolData) {
+      let selectedLabData = selectedSchoolData?.labInspections.find(
+        (inspection: any) => inspection.labName === selectedLab?.label
+      );
+      if (!selectedLabData) {
+        let labConfigurationString = '';
+        if (metaData && metaData.totalComputers) {
+          labConfigurationString = `
+            labConfiguration:{
+              totalNumberOfComputers: ${metaData?.totalComputers || '0'}
+              totalNumberOfWorkingComputers: ${
+                metaData?.totalWorkingComputers || '0'
+              }
+              projectInteractivePanel: ${metaData?.selectedProjector?.value}
+              speakers: ${metaData?.selectedSpeaker?.value}
+              powerBackup: ${metaData?.selectedPowerBackup?.value}
+              powerBackupType: ${metaData?.selectedPowerBackup?.value || 'none'}
+              internetConnection: ${metaData?.internetMode?.value || 'none'}
+            }
+          `;
+        }
+        const addLabQuery = `
+          mutation {
+            addLabInspection(input:{
+              ${labConfigurationString || ''}
+              labName: "${selectedLab?.label}"
+              inspectionDate: "${new Date().toISOString()}"
+            }, schoolConnectId:"${selectedSchoolData?.id}") {
+              id
+              labName
+            }
           }
         `;
+        const addLabRes = await requestToGraphql(addLabQuery, {});
+        selectedLabData = addLabRes?.data?.addLabInspection;
       }
-      const addLabQuery = `
+
+      const inspectedLabDevice = (selectedLabData?.systems || []).find(
+        (system: any) =>
+          system.uniqueDeviceId === inspectionData?.allSystemInfo?.system?.uuid
+      );
+
+      let inspectionChecks = inspectedLabDevice
+        ? 'inspectionChecks: { replace: ['
+        : 'inspectionChecks: [';
+      if (inspectionData && inspectionData.firewallData) {
+        inspectionData.firewallData.forEach((link: any) => {
+          inspectionChecks += `
+            {
+              name: "${link.name}",
+              type: "firewall",
+              status: "${link.status}",
+              spec: "${link.key}",
+            }
+          `;
+        });
+      }
+      if (inspectionData && inspectionData.softwareApplicationsData) {
+        inspectionData.softwareApplicationsData.forEach((app: any) => {
+          inspectionChecks += `
+            {
+              name: "${app.name}",
+              type: "softwareApplication",
+              status: "${app.status}",
+              spec: "${app.key}",
+            }
+          `;
+        });
+      }
+      if (inspectionData && inspectionData.inspectionMetaData) {
+        inspectionData.inspectionMetaData.forEach((link: any) => {
+          inspectionChecks += `
+            {
+              name: "${link.name}",
+              type: "basic",
+              status: "${link.status}",
+              spec: "${link.spec}",
+            }
+          `;
+        });
+      }
+      if (inspectionData && inspectionData.manualChecksData) {
+        inspectionData.manualChecksData.forEach((manual: any) => {
+          inspectionChecks += `
+            {
+              name: "${manual.name}",
+              type: "manual",
+              status: "${manual.status}",
+              spec: "${manual.key}",
+            }
+          `;
+        });
+      }
+      inspectionChecks += inspectedLabDevice ? ']}' : ']';
+
+      const addLabDeviceQuery = `
         mutation {
-          addLabInspection(input:{
-            ${labConfigurationString || ''}
-            labName: "${selectedLab?.label}"
-            inspectionDate: "${new Date().toISOString()}"
-          }, schoolConnectId:"${selectedSchoolData?.id}") {
+          ${!inspectedLabDevice ? 'add' : 'update'}LabInspectedDevice(
+            ${inspectedLabDevice ? `id: "${inspectedLabDevice?.id}"` : ''}
+            input: {
+              serialNo: ${parseInt(selectedComputerSrNo?.label, 10)},
+              uniqueDeviceId: "${inspectionData?.allSystemInfo?.system?.uuid}",
+              inspectionMode: "${navigator.onLine ? 'online' : 'offline'}",
+              status: "${inspectionData?.status}",
+              ${inspectionChecks}
+            }
+            inspectionConnectId: "${selectedLabData?.id}"
+            schoolConnectId: "${selectedSchoolData?.id}"
+          ) {
             id
-            labName
           }
         }
       `;
-      const addLabRes = await requestToGraphql(addLabQuery, {});
-      selectedLabData = addLabRes?.data?.addLabInspection;
-    }
 
-    const inspectedLabDevice = (selectedLabData?.systems || []).find(
-      (system: any) =>
-        system.uniqueDeviceId === inspectionData?.allSystemInfo?.system?.uuid
-    );
-
-    let firewallChecks = '';
-    if (inspectionData && inspectionData.firewallData) {
-      firewallChecks = !inspectedLabDevice
-        ? 'firewallChecks: ['
-        : 'firewallChecks: { replace: [';
-      inspectionData.firewallData.forEach((link: any) => {
-        firewallChecks += `
-          {
-            name: "${link.name}",
-            type: "firewall",
-            status: "${link.status}",
-            spec: "${link.key}",
-          }
-        `;
-      });
-      firewallChecks += !inspectedLabDevice ? ']' : '] }';
-    }
-    let softwareApplicationChecks = '';
-    if (inspectionData && inspectionData.softwareApplicationsData) {
-      softwareApplicationChecks = !inspectedLabDevice
-        ? 'applicationChecks: ['
-        : 'applicationChecks: { replace: [';
-      inspectionData.softwareApplicationsData.forEach((app: any) => {
-        softwareApplicationChecks += `
-          {
-            name: "${app.name}",
-            type: "softwareApplication",
-            status: "${app.status}",
-            spec: "${app.key}",
-          }
-        `;
-      });
-      softwareApplicationChecks += !inspectedLabDevice ? ']' : '] }';
-    }
-    let basicChecks = '';
-    if (inspectionData && inspectionData.inspectionMetaData) {
-      basicChecks = !inspectedLabDevice
-        ? 'basicChecks: ['
-        : 'basicChecks: { replace: [';
-      inspectionData.inspectionMetaData.forEach((link: any) => {
-        basicChecks += `
-          {
-            name: "${link.name}",
-            type: "firewall",
-            status: "${link.status}",
-            spec: "${link.spec}",
-          }
-        `;
-      });
-      basicChecks += !inspectedLabDevice ? ']' : '] }';
-    }
-    const addLabDeviceQuery = `
-      mutation {
-        ${!inspectedLabDevice ? 'add' : 'update'}LabInspectedDevice(
-          ${inspectedLabDevice ? `id: "${inspectedLabDevice?.id}"` : ''}
-          input: {
-            serialNo: ${parseInt(selectedComputerSrNo?.label, 10)},
-            uniqueDeviceId: "${inspectionData?.allSystemInfo?.system?.uuid}",
-            inspectionMode: "${navigator.onLine ? 'online' : 'offline'}",
-            status: "${inspectionData?.status}",
-            ${firewallChecks}
-            ${softwareApplicationChecks}
-            ${basicChecks}
-          }
-          inspectionConnectId: "${selectedLabData?.id}"
-          schoolConnectId: "${selectedSchoolData?.id}"
-        ) {
-          id
-        }
+      const addLabDeviceRes = await requestToGraphql(addLabDeviceQuery, {});
+      if (
+        addLabDeviceRes &&
+        (addLabDeviceRes?.data?.addLabInspectedDevice?.id ||
+          addLabDeviceRes?.data?.updateLabInspectedDevice?.id)
+      ) {
+        setSyncSuccess(true);
       }
-    `;
-
-    await requestToGraphql(addLabDeviceQuery, {});
-    await fetchSchools();
-    setIsQueryProcessing(false);
+      await fetchSchools();
+      setIsQueryProcessing(false);
+    }
   };
 
   React.useEffect(() => {
     if (schools && selectedSchool && selectedLab) {
       const selectedSchoolData = schools.find(
-        (school) => school.name === selectedSchool?.label
+        (school) => school.id === selectedSchool?.value
       );
 
       if (selectedSchoolData) {
@@ -445,7 +513,8 @@ const ConfigureLab = () => {
         ) : (
           <>
             <img src={offlineIcon} alt="offline" />
-            You are currently offline, connect to the internet or download the report at the end
+            You are currently offline, connect to the internet or download the
+            report at the end
           </>
         )}
       </div>
