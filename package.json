@@ -201,8 +201,8 @@
     "webpack-merge": "^5.8.0"
   },
   "build": {
-    "productName": "ElectronReact",
-    "appId": "org.erb.ElectronReact",
+    "productName": "Tekie - Lab Inspection",
+    "appId": "org.erb.tekie",
     "asar": true,
     "asarUnpack": "**\\*.{node,dll}",
     "files": [
@@ -242,7 +242,8 @@
     "win": {
       "target": [
         "nsis"
-      ]
+      ],
+      "requestedExecutionLevel": "requireAdministrator"
     },
     "linux": {
       "target": [
@@ -260,8 +261,8 @@
     ],
     "publish": {
       "provider": "github",
-      "owner": "electron-react-boilerplate",
-      "repo": "electron-react-boilerplate"
+      "owner": "tekie",
+      "repo": "tekie"
     }
   },
   "collective": {
