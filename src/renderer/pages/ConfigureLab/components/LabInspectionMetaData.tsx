@@ -8,6 +8,7 @@ import React from 'react';
 import Select from 'react-select';
 import { MetaData } from '../interface';
 import colourStyles from '../styles';
+import plusIcon from '../../../assets/plusIcon.svg';
 
 const LabInspectionMetaData = ({
   onChangeMetaData,
@@ -238,19 +239,22 @@ const LabInspectionMetaData = ({
         <div className="configure-set-1">
           <span>Lab Photos</span>
           <div className="configure-set-dropdown custom-set">
-            <div style={{ display: 'flex' }}>
-              {Object.values(metaData?.mediaFiles || {})?.length
-                ? Object.values(metaData?.mediaFiles).map((file: any) => (
-                    <div className="file-preview">{file.name}</div>
-                  ))
-                : 'Upload Lab Photos Here'}
+            <div style={{ display: 'flex', flexWrap: 'wrap' }}>
+              {Object.values(metaData?.mediaFiles || {})?.length ? (
+                Object.values(metaData?.mediaFiles).map((file: any) => (
+                  <div className="file-preview">{file.name}</div>
+                ))
+              ) : (
+                <span className="upload-text">Upload Lab Photos Here</span>
+              )}
             </div>
             <button type="button">
+              <img src={plusIcon} alt="plus" />
               Upload
               <input
                 type="file"
+                accept=".png,.jpg,.jpeg"
                 onChange={(e) => {
-                  console.log('aasfasf', e.target.files);
                   setMetaData({
                     ...metaData,
                     mediaFiles: e.target.files || [],

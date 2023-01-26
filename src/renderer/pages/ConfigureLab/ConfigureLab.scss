@@ -136,7 +136,7 @@
       padding: 6px 10px;
       color: #504F4F;
       font-family: Inter-Regular;
-      margin-right: 8px;
+      margin: 0px 8px 4px 0px;
     }
 
     .configure-set-dropdown {
@@ -155,6 +155,13 @@
           justify-content: space-between;
           align-items: center;
           cursor: default;
+          position: relative;
+
+          & .upload-text {
+            font-family: 'Inter-Regular';
+            font-size: 16px;
+            padding: 0;
+          }
 
           & button {
             z-index: 99;
@@ -164,7 +171,15 @@
             color: #8C61CB;
             font-family: 'Inter-Medium';
             padding: 8px 16px;
-            position: relative;
+            // position: relative;
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: center;
+
+            & img {
+              margin-right: 4px;
+            }
 
             & input {
               position: absolute;
@@ -199,6 +214,7 @@
 }
 
 .primary-button-container {
+  z-index: 99;
   width: 100%;
   padding: 20px 30px;
   box-sizing: border-box;

@@ -499,7 +499,7 @@ const AutomatedInspection = ({
       };
       onChangeMetaData(updatedInspectionData);
     }
-  }, [inspectionStatus]);
+  }, [inspectionStatus, manualChecksData]);
 
   const overallInspectionStatus =
     inspectionStatus !== 'processing'
