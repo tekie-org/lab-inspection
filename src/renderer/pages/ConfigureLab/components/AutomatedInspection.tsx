@@ -125,11 +125,6 @@ const softwareApplications: SoftwareApplicationsAndFirewallInterface[] = [
     key: 'notepad',
     status: 'processing',
   },
-  {
-    name: 'MS Access',
-    key: 'msaccess',
-    status: 'processing',
-  },
 ];
 
 const manualChecks: SoftwareApplicationsAndFirewallInterface[] = [
@@ -240,6 +235,7 @@ const StatusBadgeIcons: {
 
 const AutomatedInspection = ({
   isSyncSuccess,
+  inspectionMetaExists,
   inspectionData,
   currentPage,
   onChangeMetaData,
@@ -250,10 +246,12 @@ const AutomatedInspection = ({
   setCurrentPage,
 }: {
   isSyncSuccess: boolean;
+  inspectionMetaExists: boolean;
   inspectionData: {
     inspectionMetaData: object | null;
     softwareApplicationsData: object | null;
     firewallData: object | null;
+    manualChecksData: any;
     status: 'compatible' | 'processing' | 'incompatible';
   };
   selectedLab: any;
@@ -274,8 +272,9 @@ const AutomatedInspection = ({
   const [metaData, setMetaData] = React.useState<MetaData>(metaDataValue);
   const [inspectionMetaData, setInspectionMetaData] =
     React.useState<InspectionMetaData[]>(basicChecks);
-  const [manualChecksData, setManualChecksData] =
-    React.useState<SoftwareApplicationsAndFirewallInterface[]>(manualChecks);
+  const [manualChecksData, setManualChecksData] = React.useState<
+    SoftwareApplicationsAndFirewallInterface[]
+  >(inspectionData.manualChecksData || manualChecks);
   const [softwareApplicationsData, setSoftwareApplicationsData] =
     React.useState<SoftwareApplicationsAndFirewallInterface[]>(
       softwareApplications
@@ -511,14 +510,18 @@ const AutomatedInspection = ({
             >
               Select School
             </span>{' '}
-            /{' '}
-            <span
-              onClick={() => {
-                setCurrentPage(1);
-              }}
-            >
-              Configure Labs
-            </span>{' '}
+            {!inspectionMetaExists ? (
+              <>
+                /{' '}
+                <span
+                  onClick={() => {
+                    setCurrentPage(1);
+                  }}
+                >
+                  Configure Labs
+                </span>{' '}
+              </>
+            ) : null}
             / <span className="active">Perform Inspection</span>
           </div>
         </div>

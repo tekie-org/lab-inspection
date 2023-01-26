@@ -1,3 +1,6 @@
+/* eslint-disable @typescript-eslint/no-loop-func */
+/* eslint-disable no-plusplus */
+/* eslint-disable no-return-assign */
 /* eslint-disable no-await-in-loop */
 /* eslint-disable no-restricted-syntax */
 /* eslint-disable react-hooks/exhaustive-deps */
@@ -32,6 +35,7 @@ const defaultMetaDataValues = {
 
 const ConfigureLab = () => {
   const [currentPage, setCurrentPage] = React.useState(0);
+  const [allUploadedFiles, setAllUploadedFiles] = React.useState<any[]>([]);
   const [schools, setSchools] = React.useState<any[] | []>([]);
   const [selectedSchool, setSelectedSchool] =
     React.useState<StateLabelData | null>(null);
@@ -164,6 +168,13 @@ const ConfigureLab = () => {
       Component: (
         <AutomatedInspection
           isSyncSuccess={isSyncSuccess}
+          inspectionMetaExists={
+            schools
+              .find((school) => school.id === selectedSchool?.value)
+              ?.labInspections.find(
+                (inspection: any) => inspection.labName === selectedLab?.label
+              )?.labConfiguration?.totalNumberOfComputers
+          }
           inspectionData={inspectionData}
           currentPage={currentPage}
           metaDataValue={metaData}
@@ -171,9 +182,9 @@ const ConfigureLab = () => {
           selectedComputerSrNo={selectedComputerSrNo}
           setCurrentPage={(pageNumber) => setCurrentPage(pageNumber)}
           selectedSchoolData={
-            schools && schools.length
-              ? schools.find((school) => school.id === selectedSchool?.value)
-              : { name: selectedSchool?.label }
+            (schools || []).find(
+              (school) => school.id === selectedSchool?.value
+            ) || { name: selectedSchool?.label }
           }
           onChangeMetaData={(metaDataValue) => setInspectionData(metaDataValue)}
         />
@@ -315,22 +326,52 @@ const ConfigureLab = () => {
     }
   }
 
+  const getLetter = (value: string) => {
+    const code = value.split(' ');
+    let newCode = '';
+    code.forEach((c: any) => (newCode += c ? `${c[0]}`.toUpperCase() : ''));
+    return newCode;
+  };
+
+  const getUniqueSchoolCode = (code: any) => {
+    const newCode = getLetter(code);
+    let schoolCode = newCode;
+    let count = 1;
+    while (
+      schools.find((school: any) => school.code === schoolCode) &&
+      count < 100
+    ) {
+      schoolCode = `${newCode}${count}`;
+      count++;
+    }
+    return schoolCode;
+  };
+
   const addOrUpdateInspectionData = async () => {
     setIsQueryProcessing(true);
     let selectedSchoolData = schools.find(
-      (school) => school.id === selectedSchool?.value
+      (school) =>
+        school.id === selectedSchool?.value ||
+        school.name === selectedSchool?.label
     );
-    if (!selectedSchoolData && false) {
+    if (!selectedSchoolData) {
+      const code = getUniqueSchoolCode(selectedSchool?.label);
       const addSchoolQuery = `
         mutation {
           addSchool(
-            name: "${selectedSchool?.label}"
-            code: "${selectedSchool?.label}"
+            input: {
+              name: "${selectedSchool?.label}"
+              code: "${code}"
+            }
           ) {
             id
             name
             code
+            labInspections {
+              labName
+            }
           }
+        }
       `;
       const addSchoolResponse = await requestToGraphql(addSchoolQuery, {});
       selectedSchoolData = addSchoolResponse?.data?.addSchool;
@@ -339,55 +380,73 @@ const ConfigureLab = () => {
       let selectedLabData = selectedSchoolData?.labInspections.find(
         (inspection: any) => inspection.labName === selectedLab?.label
       );
-      if (!selectedLabData) {
-        let labConfigurationString = '';
-        const uploadedFiles = [];
-        for (const file of metaData.mediaFiles) {
+      let labConfigurationString = '';
+      const uploadedFiles = [];
+      for (const file of metaData.mediaFiles) {
+        if (!allUploadedFiles.find((uf: any) => uf?.name === file?.name)) {
           const uploadedFile = await uploadFile(file, {
             fileBucket: 'python',
           });
           uploadedFiles.push(uploadedFile);
+          setAllUploadedFiles([...allUploadedFiles, file]);
         }
-        if (metaData && metaData.totalComputers) {
-          labConfigurationString = `
-            labConfiguration:{
-              totalNumberOfComputers: ${metaData?.totalComputers || '0'}
-              totalNumberOfWorkingComputers: ${
-                metaData?.totalWorkingComputers || '0'
-              }
-              projectInteractivePanel: ${metaData?.selectedProjector?.value}
-              speakers: ${metaData?.selectedSpeaker?.value}
-              powerBackup: ${metaData?.selectedPowerBackup?.value}
-              powerBackupType: ${
-                metaData?.selectedPowerBackupType?.value || 'none'
-              }
-              internetConnection: ${metaData?.internetMode?.value || 'none'}
-            }
-          `;
-        }
-        let mediaFileConnectString = '';
-        if (uploadedFiles?.length) {
-          mediaFileConnectString = `
-            mediaConnectIds: [${uploadedFiles?.map(
-              (file: any) => `"${file?.id}"`
-            )}]
-          `;
-        }
-        const addLabQuery = `
-          mutation {
-            addLabInspection(input:{
-              ${labConfigurationString || ''}
-              labName: "${selectedLab?.label}"
-              inspectionDate: "${new Date().toISOString()}"
-            }, schoolConnectId:"${
-              selectedSchoolData?.id
-            }", ${mediaFileConnectString}) {
-              id
-              labName
-            }
-          }
+      }
+      labConfigurationString = 'labConfiguration:{';
+      if (metaData?.totalComputers && metaData?.totalComputers !== 0) {
+        labConfigurationString += `totalNumberOfComputers: ${metaData?.totalComputers}, `;
+      }
+      if (
+        metaData?.totalWorkingComputers &&
+        metaData?.totalWorkingComputers !== 0
+      ) {
+        labConfigurationString += `totalNumberOfWorkingComputers: ${metaData?.totalWorkingComputers}, `;
+      }
+      if (metaData?.selectedProjector?.value) {
+        labConfigurationString += `projectInteractivePanel: ${metaData?.selectedProjector?.value}, `;
+      }
+      if (metaData?.selectedSpeaker?.value) {
+        labConfigurationString += `speakers: ${metaData?.selectedSpeaker?.value}, `;
+      }
+      if (metaData?.selectedPowerBackup?.value) {
+        labConfigurationString += `powerBackup: ${metaData?.selectedPowerBackup?.value}, `;
+      }
+      if (metaData?.selectedPowerBackupType?.value) {
+        labConfigurationString += `powerBackupType: ${
+          metaData?.selectedPowerBackupType?.value || 'none'
+        }, `;
+      }
+      if (metaData?.internetMode?.value) {
+        labConfigurationString += `internetConnection: ${
+          metaData?.internetMode?.value || 'none'
+        }, `;
+      }
+      labConfigurationString += `}`;
+      let mediaFileConnectString = '';
+      if (uploadedFiles?.length) {
+        mediaFileConnectString = `
+          mediaConnectIds: [${uploadedFiles?.map(
+            (file: any) => `"${file?.id}"`
+          )}]
         `;
-        const addLabRes = await requestToGraphql(addLabQuery, {});
+      }
+      const addLabQuery = `
+        mutation {
+          ${!selectedLabData ? 'add' : 'update'}LabInspection(
+            ${selectedLabData?.id ? `id: "${selectedLabData?.id}"` : ''}
+            input:{
+            ${labConfigurationString || ''}
+            labName: "${selectedLab?.label}"
+            inspectionDate: "${new Date().toISOString()}"
+          }, schoolConnectId:"${
+            selectedSchoolData?.id
+          }", ${mediaFileConnectString}) {
+            id
+            labName
+          }
+        }
+      `;
+      const addLabRes = await requestToGraphql(addLabQuery, {});
+      if (!selectedLabData) {
         selectedLabData = addLabRes?.data?.addLabInspection;
       }
 
@@ -476,9 +535,9 @@ const ConfigureLab = () => {
       ) {
         setSyncSuccess(true);
       }
-      await fetchSchools();
-      setIsQueryProcessing(false);
     }
+    await fetchSchools();
+    setIsQueryProcessing(false);
   };
 
   React.useEffect(() => {
@@ -498,6 +557,11 @@ const ConfigureLab = () => {
           setSelectedComputerSrNo({
             label: `${(Math.max(systemSrNos) || 0) + 1}`,
             value: `${(Math.max(systemSrNos) || 0) + 1}`,
+          });
+          setMetaData(defaultMetaDataValues);
+          setInspectionData({
+            ...inspectionData,
+            status: 'processing',
           });
         }
       }
