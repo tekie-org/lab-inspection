@@ -304,6 +304,7 @@ const AutomatedInspection = ({
     const updatedeInspectionMetaData = inspectionMetaData.map((meta) => {
       const updatedInspection = meta;
       updatedInspection.status = 'incompatible';
+      const systemDistro = systemInfo?.os?.distro || '';
       switch (meta.key) {
         case 'ram': {
           const ramValue = formatBytes(systemInfo?.mem?.total || 0);
@@ -354,9 +355,8 @@ const AutomatedInspection = ({
           break;
         }
         case 'os': {
-          const systemDistro = systemInfo?.os?.distro || '';
           if (
-            ['7', '8', '10', '11'].some(
+            ['7', '8', '10', '11', 'macOS'].some(
               (value) => systemDistro.indexOf(value) !== -1
             )
           ) {
@@ -366,7 +366,9 @@ const AutomatedInspection = ({
           break;
         }
         case 'chrome': {
+          const isMacOS = systemDistro.indexOf('macOS') !== -1;
           const chromeVersion = arg?.installedApps?.chrome?.version || 0;
+          if (isMacOS) updatedInspection.status = 'compatible';
           if (parseFloat(chromeVersion) >= meta.minRequirement)
             updatedInspection.status = 'compatible';
           updatedInspection.spec = chromeVersion;
@@ -383,19 +385,33 @@ const AutomatedInspection = ({
         isInspectionStatus = 'incompatible';
       return updatedInspection;
     });
-    const updatedSoftwareApplicationsData = softwareApplicationsData.map(
-      (saData) => {
-        const updatedSoftwareApp = saData;
-        updatedSoftwareApp.status = 'incompatible';
-        if (arg?.installedApps?.[updatedSoftwareApp.key]) {
-          updatedSoftwareApp.status = 'compatible';
+    if (systemInfo?.os?.distro.includes('macOS')) {
+      const finalArr = [
+        ...manualChecksData,
+        ...softwareApplicationsData,
+      ].filter(
+        (value, index, self) =>
+          index === self.findIndex((t) => t.key === value.key)
+      );
+
+      setManualChecksData(finalArr);
+    } else {
+      const updatedSoftwareApplicationsData = softwareApplicationsData.map(
+        (saData) => {
+          const updatedSoftwareApp = saData;
+          updatedSoftwareApp.status = 'incompatible';
+          if (arg?.installedApps?.[updatedSoftwareApp.key]) {
+            updatedSoftwareApp.status = 'compatible';
+          }
+          if (updatedSoftwareApp.status === 'incompatible') {
+            isInspectionStatus = 'incompatible';
+          }
+          return updatedSoftwareApp;
         }
-        if (updatedSoftwareApp.status === 'incompatible') {
-          isInspectionStatus = 'incompatible';
-        }
-        return updatedSoftwareApp;
-      }
-    );
+      );
+      setSoftwareApplicationsData(updatedSoftwareApplicationsData);
+    }
+
     const updatedFirewallData = firewallData.map((fwData) => {
       const updatedFirewall = fwData;
       const statusObj = arg?.firewallChecklinksStatus.find(
@@ -409,7 +425,6 @@ const AutomatedInspection = ({
       }
       return updatedFirewall;
     });
-    setSoftwareApplicationsData(updatedSoftwareApplicationsData);
     setInspectionMetaData(updatedeInspectionMetaData);
     setFirewallData(updatedFirewallData);
     setInspectionStatus(isInspectionStatus);
@@ -675,28 +690,30 @@ const AutomatedInspection = ({
             })}
           </table>
         </Collapsible>
-        <Collapsible open header="Software Applications">
-          <table>
-            <tr>
-              <th style={{ width: '50%' }}>Application</th>
-              <th>STATUS</th>
-              {/* <th>SPECIFICATION</th> */}
-            </tr>
-            {softwareApplicationsData.map((val) => {
-              return (
-                <tr key={val.name}>
-                  <td>{val.name}</td>
-                  <td>
-                    <div className={`status-badge badge-${val.status}`}>
-                      <img src={StatusBadgeIcons[val.status]} alt="" />
-                      {softwareApplicationLabelMap[val.status]}
-                    </div>
-                  </td>
-                </tr>
-              );
-            })}
-          </table>
-        </Collapsible>
+        {!systemInformation?.os?.distro?.includes('macOS') && (
+          <Collapsible open header="Software Applications">
+            <table>
+              <tr>
+                <th style={{ width: '50%' }}>Application</th>
+                <th>STATUS</th>
+                {/* <th>SPECIFICATION</th> */}
+              </tr>
+              {softwareApplicationsData.map((val) => {
+                return (
+                  <tr key={val.name}>
+                    <td>{val.name}</td>
+                    <td>
+                      <div className={`status-badge badge-${val.status}`}>
+                        <img src={StatusBadgeIcons[val.status]} alt="" />
+                        {softwareApplicationLabelMap[val.status]}
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+            </table>
+          </Collapsible>
+        )}
         <Collapsible open header="Firewall">
           <table>
             <tr>
