@@ -117,7 +117,9 @@ const ConfigureLab = () => {
         <Button
           classNames="primary-button"
           title="Next"
-          isDisabled={!selectedSchool || !selectedLab || !selectedComputerSrNo}
+          isDisabled={
+            !selectedSchool?.value || !selectedLab || !selectedComputerSrNo
+          }
           onClick={() => {
             const schoolId = selectedSchool?.value;
             const inspectionMetaExists = schools
@@ -349,33 +351,11 @@ const ConfigureLab = () => {
 
   const addOrUpdateInspectionData = async () => {
     setIsQueryProcessing(true);
-    let selectedSchoolData = schools.find(
+    const selectedSchoolData = schools.find(
       (school) =>
         school.id === selectedSchool?.value ||
         school.name === selectedSchool?.label
     );
-    if (!selectedSchoolData) {
-      const code = getUniqueSchoolCode(selectedSchool?.label);
-      const addSchoolQuery = `
-        mutation {
-          addSchool(
-            input: {
-              name: "${selectedSchool?.label}"
-              code: "${code}"
-            }
-          ) {
-            id
-            name
-            code
-            labInspections {
-              labName
-            }
-          }
-        }
-      `;
-      const addSchoolResponse = await requestToGraphql(addSchoolQuery, {});
-      selectedSchoolData = addSchoolResponse?.data?.addSchool;
-    }
     if (selectedSchoolData) {
       let selectedLabData = selectedSchoolData?.labInspections.find(
         (inspection: any) => inspection.labName === selectedLab?.label
@@ -581,7 +561,25 @@ const ConfigureLab = () => {
 
   React.useEffect(() => {
     fetchSchools();
+    const schoolFromLS = localStorage.getItem('selectedSchool');
+    const labFromLS = localStorage.getItem('selectedLab');
+    const srNoFromLS = localStorage.getItem('selectedComputerSrNo');
+    if (schoolFromLS) setSelectedSchool(JSON.parse(schoolFromLS));
+    if (labFromLS) setSelectedLab(JSON.parse(labFromLS));
+    if (srNoFromLS) setSelectedComputerSrNo(JSON.parse(srNoFromLS));
   }, []);
+
+  React.useEffect(() => {
+    if (selectedSchool)
+      localStorage.setItem('selectedSchool', JSON.stringify(selectedSchool));
+    if (selectedLab)
+      localStorage.setItem('selectedLab', JSON.stringify(selectedLab));
+    if (selectedComputerSrNo)
+      localStorage.setItem(
+        'selectedComputerSrNo',
+        JSON.stringify(selectedComputerSrNo)
+      );
+  }, [selectedComputerSrNo, selectedLab, selectedSchool]);
 
   const currentPageConfiguration = ConfigureLabPages[currentPage];
   return (

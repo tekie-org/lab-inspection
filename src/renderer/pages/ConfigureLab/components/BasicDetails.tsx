@@ -37,10 +37,12 @@ const BasicDetails = ({
   onComputerSrNoChange,
 }: {
   schools: Array<any>;
-  selectedSchool: { label: string; value: string } | null;
+  selectedSchool: { label: string; value: string; code?: string } | null;
   selectedLab: { label: string; value: string } | null;
   selectedComputerSrNo: { label: string; value: string } | null;
-  onSchoolChange: (e: { label: string; value: string } | null) => void;
+  onSchoolChange: (
+    e: { label: string; value: string; code: string } | null
+  ) => void;
   onLabChange: (e: { label: string; value: string } | null) => void;
   onComputerSrNoChange: (e: { label: string; value: string }) => void;
 }) => {
@@ -52,7 +54,39 @@ const BasicDetails = ({
       </div>
       <div className="configure-set-container">
         <div className="configure-set-1">
-          <span>Select School</span>
+          <span>School Code</span>
+          <input
+            className="configure-set-dropdown"
+            value={selectedSchool?.code}
+            type="text"
+            onChange={(e) => {
+              const schoolDetail = (schools || []).find(
+                (school) =>
+                  e?.target?.value?.toLowerCase() ===
+                  school?.code?.toLowerCase()
+              );
+              if (schoolDetail?.id) {
+                onSchoolChange({
+                  code: e?.target?.value,
+                  label: schoolDetail?.name,
+                  value: schoolDetail?.id,
+                });
+              } else {
+                onSchoolChange({
+                  code: e?.target?.value,
+                  label: '',
+                  value: '',
+                });
+              }
+              onLabChange(null);
+              onComputerSrNoChange({ label: '1', value: '1' });
+            }}
+            placeholder="Please Enter School Code"
+          />
+          <span className="configure-school-name">
+            {selectedSchool?.label && <>Name: {selectedSchool?.label}</>}
+          </span>
+          {/* <br />
           <Select
             className="configure-set-dropdown"
             options={
@@ -69,7 +103,7 @@ const BasicDetails = ({
             value={selectedSchool}
             styles={colourStyles}
             placeholder="Enter School Name"
-          />
+          /> */}
         </div>
         <div className="configure-set-1">
           <span>Select Lab</span>

@@ -103,6 +103,11 @@
     flex-wrap: wrap;
     margin: 40px 0px;
 
+    & > .configure-school-name {
+      margin-top: 8px;
+      padding: 0;
+    }
+
     .configure-sub-set-container:nth-child(1) {
       margin-right: 30px;
     }

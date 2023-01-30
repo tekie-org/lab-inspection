@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export interface StateLabelData {
+  code?: string;
   label: string;
   value: string;
 }

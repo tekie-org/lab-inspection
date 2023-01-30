@@ -171,7 +171,7 @@ const LabInspectionMetaData = ({
               />
             </div>
             <div className="configure-sub-set-container">
-              <span>Project Interactive Panel</span>
+              <span>Display</span>
               <Select
                 className="configure-set-dropdown"
                 isSearchable={false}
@@ -236,7 +236,7 @@ const LabInspectionMetaData = ({
             placeholder="Select an option"
           />
         </div>
-        <div className="configure-set-1">
+        {/* <div className="configure-set-1">
           <span>Lab Photos</span>
           <div className="configure-set-dropdown custom-set">
             <div style={{ display: 'flex', flexWrap: 'wrap' }}>
@@ -265,7 +265,7 @@ const LabInspectionMetaData = ({
               />
             </button>
           </div>
-        </div>
+        </div> */}
       </div>
     </div>
   );
