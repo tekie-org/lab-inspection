@@ -44,7 +44,11 @@ export const speakerOptions = [
 export const displayOptions = [
   {
     value: 'smartBoard',
-    label: 'Smart Board',
+    label: 'Smart Interactive Panel',
+  },
+  {
+    value: 'smartTV',
+    label: 'Smart TV',
   },
   {
     value: 'projector',
