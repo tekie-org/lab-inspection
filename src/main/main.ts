@@ -49,6 +49,16 @@ class AppUpdater {
 
 let mainWindow: BrowserWindow | null = null;
 
+ipcMain.on('system-uuid', async (event, args) => {
+  const system = await si.system();
+  const all = await si.getAllData();
+  event.reply('system-uuid', {
+    uuid: system?.uuid,
+    allSystemInfo: all,
+    schoolList: args[0],
+  });
+});
+
 ipcMain.on('lab-inspection', async (event) => {
   console.log('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~');
   console.log('~~~~~~~~~~~THIS IS IN PROCESS!~~~~~~~~~~~~~');
@@ -62,33 +72,37 @@ ipcMain.on('lab-inspection', async (event) => {
     notepad: false,
     msAccess: false,
   };
+  let windowsApps: any[] = [];
+  let filmoraDir: any[] = [];
   try {
-    const windowsApps = await fs.readdir('C://Program Files/WindowsApps');
-    const filmoraDir = await fs.readdir(
-      'C://Users/Hp/AppData/Local/Wondershare'
-    );
-    if (windowsApps && windowsApps.length) {
-      windowsApps.forEach((e) => {
-        if (e.includes('Paint')) installedApps.paint3d = true;
-        if (e.includes('MSPaint')) installedApps.paint = true;
-        if (e.includes('Notepad')) installedApps.notepad = true;
-      });
-    }
-    if (
-      filmoraDir &&
-      filmoraDir.length &&
-      filmoraDir.some((dir) => dir.includes('Wondershare'))
-    )
-      installedApps.filmora = true;
+    windowsApps = await fs.readdir('C://Program Files/WindowsApps');
   } catch (e) {
     console.log(e);
   }
   try {
+    filmoraDir = await fs.readdir('C://Users/Hp/AppData/Local/Wondershare');
+  } catch (e) {
+    console.log(e);
+  }
+  if (windowsApps.length) {
+    windowsApps.forEach((e) => {
+      if (e.includes('MSPaint')) installedApps.paint3d = true;
+      if (e.includes('Paint')) installedApps.paint = true;
+      if (e.includes('Notepad')) installedApps.notepad = true;
+    });
+  }
+  if (
+    filmoraDir &&
+    filmoraDir.length &&
+    filmoraDir.some((dir) => dir.includes('Wondershare'))
+  )
+    installedApps.filmora = true;
+  try {
     const programFiles = await getAllInstalledSoftware();
     if (programFiles && programFiles.length) {
-      if (programFiles.find((e: string) => e.includes('Chrome')))
-        installedApps.chrome = programFiles.find((e: string) =>
-          e.includes('Chrome')
+      if (programFiles.find((e: any) => e?.DisplayName?.includes('Chrome')))
+        installedApps.chrome = programFiles.find((e: any) =>
+          e?.DisplayName?.includes('Chrome')
         );
     }
   } catch {
@@ -158,6 +172,7 @@ const createWindow = async () => {
   };
 
   mainWindow = new BrowserWindow({
+    title: 'Tekie',
     show: false,
     width: 880,
     height: 663,
@@ -169,6 +184,10 @@ const createWindow = async () => {
         : path.join(__dirname, '../../.erb/dll/preload.js'),
     },
   });
+
+  mainWindow.setTitle('Tekie');
+
+  mainWindow.maximize();
 
   mainWindow.loadURL(resolveHtmlPath('index.html'));
 

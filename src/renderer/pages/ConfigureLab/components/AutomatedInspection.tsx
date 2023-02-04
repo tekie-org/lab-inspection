@@ -7,15 +7,17 @@
 /* eslint-disable no-await-in-loop */
 import '../ConfigureLab.scss';
 import React from 'react';
-import loadingGif from '../../../assets/loading2.gif';
-import Collapsible from './Collapsible';
-import { MetaData } from '../interface';
-import ProcesssingIcon from '../../../assets/time.svg';
+import Select from 'react-select/creatable';
+// import loadingGif from '../../../assets/loading2.gif';
+// import ProcesssingIcon from '../../../assets/time.svg';
 import CompatibleIcon from '../../../assets/tick.svg';
 import IncompatibleIcon from '../../../assets/cross.svg';
 import measureConnectionSpeed from './speedTest';
+import colourStyles from '../styles';
+import Button from './Button';
 
-const softwareApplicationLabelMap = {
+export const softwareApplicationLabelMap = {
+  notStarted: 'Not Inspected',
   processing: 'processing',
   compatible: 'Installed',
   incompatible: 'Not Installed',
@@ -38,258 +40,279 @@ const formatBytes = (bytes: any, decimals = 2) => {
   };
 };
 
-type InspectionStatus = 'compatible' | 'processing' | 'incompatible';
+type InspectionStatus =
+  | 'compatible'
+  | 'processing'
+  | 'incompatible'
+  | 'notStarted';
 interface InspectionMetaData {
   name: string;
   key: string;
+  type: 'basic' | 'software' | 'firewall';
   status: InspectionStatus;
   spec: string;
   minRequirement: number | string;
 }
 
-const basicChecks: InspectionMetaData[] = [
+export const automatedChecks: InspectionMetaData[] = [
   {
     name: 'RAM',
     key: 'ram',
-    status: 'processing',
+    status: 'notStarted',
     spec: '-',
     minRequirement: 2,
+    type: 'basic',
   },
   {
     name: 'Processor',
     key: 'processor',
-    status: 'processing',
+    status: 'notStarted',
     spec: '-',
     minRequirement: 32,
+    type: 'basic',
   },
   {
     name: 'Monitor Specs',
     key: 'monitor',
-    status: 'processing',
+    status: 'notStarted',
     spec: '-',
     minRequirement: 13,
+    type: 'basic',
   },
   {
     name: 'Storage',
     key: 'storage',
-    status: 'processing',
+    status: 'notStarted',
     spec: '-',
     minRequirement: 100,
+    type: 'basic',
   },
   {
     name: 'Internet Speed',
     key: 'netspeed',
-    status: 'processing',
+    status: 'notStarted',
     spec: '-',
     minRequirement: 10,
+    type: 'basic',
   },
   {
     name: 'OS Compatibility',
     key: 'os',
-    status: 'processing',
+    status: 'notStarted',
     spec: '-',
     minRequirement: 7,
+    type: 'basic',
   },
   {
     name: 'Google Chrome',
     key: 'chrome',
-    status: 'processing',
+    status: 'notStarted',
     spec: '-',
     minRequirement: 70,
+    type: 'basic',
   },
-];
-interface SoftwareApplicationsAndFirewallInterface {
-  name: string;
-  key: string;
-  status: InspectionStatus;
-}
-
-const softwareApplications: SoftwareApplicationsAndFirewallInterface[] = [
   {
     name: 'Paint 3D',
     key: 'paint3d',
-    status: 'processing',
+    status: 'notStarted',
+    minRequirement: 0,
+    spec: '-',
+    type: 'software',
   },
   {
     name: 'MS Paint',
     key: 'paint',
-    status: 'processing',
+    status: 'notStarted',
+    minRequirement: 0,
+    spec: '-',
+    type: 'software',
   },
   {
     name: 'Filmora',
     key: 'filmora',
-    status: 'processing',
+    status: 'notStarted',
+    minRequirement: 0,
+    spec: '-',
+    type: 'software',
   },
   {
     name: 'Notepad',
     key: 'notepad',
-    status: 'processing',
+    status: 'notStarted',
+    minRequirement: 0,
+    spec: '-',
+    type: 'software',
   },
-];
-
-const manualChecks: SoftwareApplicationsAndFirewallInterface[] = [
-  {
-    name: 'Keyboard',
-    key: 'keyboard',
-    status: 'incompatible',
-  },
-  {
-    name: 'Mouse',
-    key: 'mouse',
-    status: 'incompatible',
-  },
-  {
-    name: 'Canva',
-    key: 'canva',
-    status: 'incompatible',
-  },
-  {
-    name: 'MS Access',
-    key: 'msAccess',
-    status: 'incompatible',
-  },
-];
-
-const firewallRules: SoftwareApplicationsAndFirewallInterface[] = [
   {
     name: 'Github.com',
     key: 'https://github.com/',
-    status: 'processing',
+    status: 'notStarted',
+    minRequirement: 0,
+    spec: '-',
+    type: 'firewall',
   },
   {
     name: 'Tekie.in',
     key: 'https://www.tekie.in',
-    status: 'processing',
+    status: 'notStarted',
+    minRequirement: 0,
+    spec: '-',
+    type: 'firewall',
   },
   {
     name: 'kahoot.it',
     key: 'https://kahoot.it',
-    status: 'processing',
+    status: 'notStarted',
+    minRequirement: 0,
+    spec: '-',
+    type: 'firewall',
   },
   {
     name: 'fonts.googleapis.com',
     key: 'https://fonts.googleapis.com/css2?family=Roboto:ital,wght@1,900&display=swap',
-    status: 'processing',
+    status: 'notStarted',
+    minRequirement: 0,
+    spec: '-',
+    type: 'firewall',
   },
   {
     name: 'figma.com',
     key: 'https://figma.com',
-    status: 'processing',
+    status: 'notStarted',
+    minRequirement: 0,
+    spec: '-',
+    type: 'firewall',
   },
   // {
   //   name: 'canva.com',
   //   key: 'https://www.canva.com/',
-  //   status: 'processing',
+  //   status: 'notStarted',
   // },
   {
     name: 'docs.google.com',
     key: 'https://docs.google.com',
-    status: 'processing',
+    status: 'notStarted',
+    minRequirement: 0,
+    spec: '-',
+    type: 'firewall',
   },
   {
     name: 'code.org',
     key: 'https://code.org/',
-    status: 'processing',
+    status: 'notStarted',
+    minRequirement: 0,
+    spec: '-',
+    type: 'firewall',
   },
   {
     name: 'developers.google.com/blockly',
     key: 'https://developers.google.com/blockly',
-    status: 'processing',
+    status: 'notStarted',
+    minRequirement: 0,
+    spec: '-',
+    type: 'firewall',
   },
-  // {
-  //   name: 'replit.com',
-  //   key: 'https://replit.com',
-  //   status: 'processing',
-  // },
   {
     name: 'playcode.io',
     key: 'https://playcode.io/empty_html',
-    status: 'processing',
+    status: 'notStarted',
+    minRequirement: 0,
+    spec: '-',
+    type: 'firewall',
   },
   {
     name: 'filmora.wondershare.com',
     key: 'https://filmora.wondershare.com',
-    status: 'processing',
+    status: 'notStarted',
+    minRequirement: 0,
+    spec: '-',
+    type: 'firewall',
   },
   {
     name: 'google.com',
     key: 'https://google.com',
-    status: 'processing',
+    status: 'notStarted',
+    minRequirement: 0,
+    spec: '-',
+    type: 'firewall',
   },
   {
     name: 'mail.google.com',
     key: 'https://mail.google.com',
-    status: 'processing',
+    status: 'notStarted',
+    minRequirement: 0,
+    spec: '-',
+    type: 'firewall',
   },
 ];
 
-const StatusBadgeIcons: {
+export const StatusBadgeIcons: {
+  notStarted: string;
   processing: string;
   compatible: string;
   incompatible: string;
 } = {
-  processing: ProcesssingIcon,
+  notStarted: '',
+  processing: '',
   compatible: CompatibleIcon,
   incompatible: IncompatibleIcon,
 };
 
 const AutomatedInspection = ({
-  isSyncSuccess,
-  inspectionMetaExists,
+  systemInfoWithSameUuidExists,
+  startInspection,
   inspectionData,
-  currentPage,
   onChangeMetaData,
-  metaDataValue,
   selectedLab,
   selectedComputerSrNo,
   selectedSchoolData,
-  setCurrentPage,
+  onComputerSrNoChange,
+  setStartInspection,
 }: {
-  isSyncSuccess: boolean;
-  inspectionMetaExists: boolean;
+  systemInfoWithSameUuidExists: boolean;
+  startInspection: boolean;
   inspectionData: {
-    inspectionMetaData: object | null;
-    softwareApplicationsData: object | null;
-    firewallData: object | null;
-    manualChecksData: any;
-    status: 'compatible' | 'processing' | 'incompatible';
+    inspectionMetaData: Array<any> | null;
+    allSystemInfo: object;
+    status: 'compatible' | 'processing' | 'incompatible' | 'notStarted';
   };
   selectedLab: any;
   selectedComputerSrNo: any;
   selectedSchoolData: any;
-  currentPage: number;
-  setCurrentPage: (pageNumber: number) => void;
+  onComputerSrNoChange: (e: { label: string; value: string }) => void;
+  setStartInspection: (status: boolean) => void;
   onChangeMetaData: (metaData: {
     allSystemInfo: object;
     inspectionMetaData: object;
-    softwareApplicationsData: object;
-    firewallData: object;
-    manualChecksData: object;
     status: InspectionStatus;
   }) => void;
-  metaDataValue: MetaData;
 }) => {
-  const [metaData, setMetaData] = React.useState<MetaData>(metaDataValue);
-  const [inspectionMetaData, setInspectionMetaData] =
-    React.useState<InspectionMetaData[]>(basicChecks);
-  const [manualChecksData, setManualChecksData] = React.useState<
-    SoftwareApplicationsAndFirewallInterface[]
-  >(inspectionData.manualChecksData || manualChecks);
-  const [softwareApplicationsData, setSoftwareApplicationsData] =
-    React.useState<SoftwareApplicationsAndFirewallInterface[]>(
-      softwareApplications
-    );
-  const [firewallData, setFirewallData] =
-    React.useState<SoftwareApplicationsAndFirewallInterface[]>(firewallRules);
+  const [inspectionMetaData, setInspectionMetaData] = React.useState<
+    InspectionMetaData[]
+  >(
+    automatedChecks.map((val) => {
+      if (inspectionData?.inspectionMetaData?.length) {
+        const check = inspectionData.inspectionMetaData.find(
+          (e: any) => e.key === val.key
+        );
+        if (check) {
+          return {
+            ...val,
+            status: check.status || val.status,
+            spec: check?.spec || val?.spec,
+          };
+        }
+      }
+      return val;
+    })
+  );
   const [inspectionStatus, setInspectionStatus] =
-    React.useState<InspectionStatus>('processing');
-  const [netspeed, setNetSpeed] = React.useState({
-    speed: 0,
-    status: 'processing',
-  });
-  const [systemInformation, setSystemInfo] = React.useState<any>({});
+    React.useState<InspectionStatus>(inspectionData.status || 'notStarted');
+  const [systemInformation, setSystemInfo] = React.useState<any>(
+    inspectionData.allSystemInfo || {}
+  );
 
-  window.electron.ipcRenderer.once('lab-inspection', (arg: any) => {
+  window.electron.ipcRenderer.once('lab-inspection', async (arg: any) => {
     // eslint-disable-next-line no-console
     // const formattedData = {
     //   ram: formatBytes(arg.mem.total),
@@ -301,261 +324,200 @@ const AutomatedInspection = ({
     setSystemInfo(systemInfo);
     let isInspectionStatus: InspectionStatus = 'compatible';
 
+    let netSpeed = 0;
+    if (navigator.onLine) {
+      const avgSpeed = await measureConnectionSpeed();
+      netSpeed = avgSpeed;
+    }
+
     const updatedeInspectionMetaData = inspectionMetaData.map((meta) => {
       const updatedInspection = meta;
       updatedInspection.status = 'incompatible';
       const systemDistro = systemInfo?.os?.distro || '';
-      switch (meta.key) {
-        case 'ram': {
-          const ramValue = formatBytes(systemInfo?.mem?.total || 0);
-          const availableRamValue = formatBytes(
-            systemInfo?.mem?.available || 0
-          );
-          if (ramValue.raw >= meta.minRequirement)
-            updatedInspection.status = 'compatible';
-          updatedInspection.spec = `Total: ${ramValue?.label}; Available: ${availableRamValue.label}`;
-          break;
-        }
-        case 'processor': {
-          const processorValue = {
-            label: `${systemInfo?.os?.arch || ''} ${
-              systemInfo?.cpu?.brand || ''
-            }`,
-            value: systemInfo?.os?.arch,
-          };
-          if (
-            ['32', '64', '86'].some(
-              (value) => processorValue.value.indexOf(value) !== -1
-            )
-          )
-            updatedInspection.status = 'compatible';
-          updatedInspection.spec = processorValue?.label;
-          break;
-        }
-        case 'monitor': {
-          const monitorValue = {
-            label: `${
-              systemInfo?.graphics?.displays?.[0]?.resolutionX || 0
-            } x ${systemInfo?.graphics?.displays?.[0]?.resolutionY || 0} - ${
-              systemInfo?.graphics?.displays?.[0]?.currentRefreshRate
-            } Hz`,
-            value: systemInfo?.graphics?.displays?.[0]?.size?.width,
-          };
-          updatedInspection.status = 'compatible';
-          updatedInspection.spec = monitorValue?.label;
-          break;
-        }
-        case 'storage': {
-          const storageValue = formatBytes(
-            systemInfo?.diskLayout?.[0]?.size || 0
-          );
-          if (storageValue.raw >= meta.minRequirement)
-            updatedInspection.status = 'compatible';
-          updatedInspection.spec = storageValue?.label;
-          break;
-        }
-        case 'os': {
-          if (
-            ['7', '8', '10', '11', 'macOS'].some(
-              (value) => systemDistro.indexOf(value) !== -1
-            )
-          ) {
-            updatedInspection.status = 'compatible';
+      if (meta.type === 'basic') {
+        switch (meta.key) {
+          case 'ram': {
+            const ramValue = formatBytes(systemInfo?.mem?.total || 0);
+            const availableRamValue = formatBytes(
+              systemInfo?.mem?.available || 0
+            );
+            if (ramValue.raw >= meta.minRequirement)
+              updatedInspection.status = 'compatible';
+            updatedInspection.spec = `Total: ${ramValue?.label}; Available: ${availableRamValue.label}`;
+            break;
           }
-          updatedInspection.spec = systemDistro;
-          break;
-        }
-        case 'chrome': {
-          const isMacOS = systemDistro.indexOf('macOS') !== -1;
-          const chromeVersion = arg?.installedApps?.chrome?.version || 0;
-          if (isMacOS) updatedInspection.status = 'compatible';
-          if (parseFloat(chromeVersion) >= meta.minRequirement)
+          case 'processor': {
+            const processorValue = {
+              label: `${systemInfo?.os?.arch || ''} ${
+                systemInfo?.cpu?.brand || ''
+              }`,
+              value: systemInfo?.os?.arch,
+            };
+            if (
+              ['32', '64', '86'].some(
+                (value) => processorValue.value.indexOf(value) !== -1
+              )
+            )
+              updatedInspection.status = 'compatible';
+            updatedInspection.spec = processorValue?.label;
+            break;
+          }
+          case 'monitor': {
+            const monitorValue = {
+              label: `${
+                systemInfo?.graphics?.displays?.[0]?.resolutionX || 0
+              } x ${systemInfo?.graphics?.displays?.[0]?.resolutionY || 0} - ${
+                systemInfo?.graphics?.displays?.[0]?.currentRefreshRate
+              } Hz`,
+              value: systemInfo?.graphics?.displays?.[0]?.size?.width,
+            };
             updatedInspection.status = 'compatible';
-          updatedInspection.spec = chromeVersion;
-          break;
+            updatedInspection.spec = monitorValue?.label;
+            break;
+          }
+          case 'storage': {
+            const storageValue = formatBytes(
+              systemInfo?.diskLayout?.[0]?.size || 0
+            );
+            if (storageValue.raw >= meta.minRequirement)
+              updatedInspection.status = 'compatible';
+            updatedInspection.spec = storageValue?.label;
+            break;
+          }
+          case 'os': {
+            if (
+              ['7', '8', '10', '11', 'macOS'].some(
+                (value) => systemDistro.indexOf(value) !== -1
+              )
+            ) {
+              updatedInspection.status = 'compatible';
+            }
+            updatedInspection.spec = systemDistro;
+            break;
+          }
+          case 'chrome': {
+            const isMacOS = systemDistro.indexOf('macOS') !== -1;
+            const chromeVersion =
+              arg?.installedApps?.chrome?.Version ||
+              arg?.installedApps?.chrome?.version ||
+              0;
+            if (isMacOS) updatedInspection.status = 'compatible';
+            if (parseFloat(chromeVersion) >= meta.minRequirement)
+              updatedInspection.status = 'compatible';
+            updatedInspection.spec = chromeVersion;
+            break;
+          }
+          case 'netspeed': {
+            updatedInspection.spec = `${netSpeed} Mbps`;
+            updatedInspection.status =
+              netSpeed > 10 ? 'compatible' : 'incompatible';
+            break;
+          }
+          default:
+            break;
         }
-        case 'netspeed': {
-          updatedInspection.status = 'processing';
-          break;
+      } else if (meta.type === 'software') {
+        const updatedSoftwareApp = meta;
+        updatedSoftwareApp.status = 'incompatible';
+        if (arg?.installedApps?.[updatedSoftwareApp.key]) {
+          updatedSoftwareApp.status = 'compatible';
         }
-        default:
-          break;
+        if (updatedSoftwareApp.status === 'incompatible') {
+          isInspectionStatus = 'incompatible';
+        }
+      } else if (meta.type === 'firewall') {
+        const updatedFirewall = meta;
+        const statusObj = arg?.firewallChecklinksStatus.find(
+          (data: any) => data.key === updatedFirewall.key
+        );
+        if (statusObj && statusObj.status) {
+          updatedFirewall.status = 'compatible';
+        } else {
+          updatedFirewall.status = 'incompatible';
+          isInspectionStatus = 'incompatible';
+        }
       }
       if (updatedInspection.status === 'incompatible')
         isInspectionStatus = 'incompatible';
       return updatedInspection;
     });
-    if (systemInfo?.os?.distro.includes('macOS')) {
-      const finalArr = [
-        ...manualChecksData,
-        ...softwareApplicationsData,
-      ].filter(
-        (value, index, self) =>
-          index === self.findIndex((t) => t.key === value.key)
-      );
 
-      setManualChecksData(finalArr);
-    } else {
-      const updatedSoftwareApplicationsData = softwareApplicationsData.map(
-        (saData) => {
-          const updatedSoftwareApp = saData;
-          updatedSoftwareApp.status = 'incompatible';
-          if (arg?.installedApps?.[updatedSoftwareApp.key]) {
-            updatedSoftwareApp.status = 'compatible';
-          }
-          if (updatedSoftwareApp.status === 'incompatible') {
-            isInspectionStatus = 'incompatible';
-          }
-          return updatedSoftwareApp;
-        }
-      );
-      setSoftwareApplicationsData(updatedSoftwareApplicationsData);
-    }
-
-    const updatedFirewallData = firewallData.map((fwData) => {
-      const updatedFirewall = fwData;
-      const statusObj = arg?.firewallChecklinksStatus.find(
-        (data: any) => data.key === updatedFirewall.key
-      );
-      if (statusObj && statusObj.status) {
-        updatedFirewall.status = 'compatible';
-      } else {
-        updatedFirewall.status = 'incompatible';
-        isInspectionStatus = 'incompatible';
-      }
-      return updatedFirewall;
-    });
     setInspectionMetaData(updatedeInspectionMetaData);
-    setFirewallData(updatedFirewallData);
     setInspectionStatus(isInspectionStatus);
   });
+
   const startLabInspection = async () => {
-    if (navigator.onLine) {
-      const avgSpeed = await measureConnectionSpeed();
-      setNetSpeed({ speed: avgSpeed, status: 'completed' });
-    } else {
-      setNetSpeed({ speed: 0, status: 'completed' });
-    }
+    setInspectionMetaData(
+      inspectionMetaData.map((meta) => ({
+        ...meta,
+        spec: '-',
+        status: 'processing',
+      }))
+    );
+    setInspectionStatus('processing');
+    window.electron.ipcRenderer.sendMessage('lab-inspection', ['ping']);
   };
 
   React.useEffect(() => {
-    window.electron.ipcRenderer.sendMessage('lab-inspection', ['ping']);
-    startLabInspection();
-  }, [currentPage]);
+    if (startInspection) startLabInspection();
+    setStartInspection(false);
+  }, [startInspection]);
 
   React.useEffect(() => {
-    if (inspectionData.status === 'processing') {
-      setInspectionMetaData(
-        inspectionMetaData.map((meta) => ({
-          ...meta,
-          spec: '-',
-          status: 'processing',
-        }))
-      );
-      setSoftwareApplicationsData(
-        softwareApplications.map((meta) => ({ ...meta, status: 'processing' }))
-      );
-      setFirewallData(
-        firewallData.map((meta) => ({ ...meta, status: 'processing' }))
-      );
-      setInspectionStatus('processing');
-      setNetSpeed({ speed: 0, status: 'processing' });
-      startLabInspection();
-    }
-  }, [inspectionData]);
-
-  React.useEffect(() => {
-    const status: InspectionStatus =
-      inspectionStatus !== 'processing'
-        ? netspeed.status === 'completed'
-          ? netspeed.speed >= 10
-            ? manualChecksData.every((check) => check.status === 'compatible')
-              ? inspectionStatus
-              : 'incompatible'
-            : 'incompatible'
-          : 'processing'
-        : 'processing';
-    if (status !== 'processing') {
+    if (inspectionStatus !== 'notStarted') {
       const updatedInspectionData = {
-        inspectionMetaData: inspectionMetaData.map((meta) => {
-          const speed =
-            netspeed.speed > 150
-              ? Math.floor(Math.random() * (150 - 100 + 1) + 100)
-              : netspeed.speed;
-          if (meta.key === 'netspeed') {
-            return {
-              ...meta,
-              spec: `${speed} Mbps`,
-              status: netspeed.speed > 10 ? 'compatible' : 'incompatible',
-            };
-          }
-          return meta;
-        }),
-        softwareApplicationsData,
-        firewallData,
-        manualChecksData,
-        status,
+        inspectionMetaData,
+        status: inspectionStatus,
         allSystemInfo: systemInformation,
       };
       onChangeMetaData(updatedInspectionData);
     }
-  }, [inspectionStatus, manualChecksData]);
-
-  const overallInspectionStatus =
-    inspectionStatus !== 'processing'
-      ? netspeed.status === 'completed'
-        ? netspeed.speed >= 10
-          ? manualChecksData.every((check) => check.status === 'compatible')
-            ? inspectionStatus
-            : 'incompatible'
-          : 'incompatible'
-        : 'processing'
-      : 'processing';
+  }, [inspectionStatus]);
 
   return (
-    <div className="configure-lab-container">
+    <div
+      className="scroll-container"
+      style={{
+        paddingBottom: '250px',
+      }}
+    >
       <div className="configure-lab-header">
-        <div className="configure-lab-header left-aligned">
-          <h1>Perform Inspection</h1>
-          <div className="breadcrumbs">
-            <span
-              onClick={() => {
-                setCurrentPage(0);
-              }}
-            >
-              Select School
-            </span>{' '}
-            {!inspectionMetaExists ? (
-              <>
-                /{' '}
-                <span
-                  onClick={() => {
-                    setCurrentPage(1);
-                  }}
-                >
-                  Configure Labs
-                </span>{' '}
-              </>
-            ) : null}
-            / <span className="active">Perform Inspection</span>
-          </div>
-        </div>
         <div className="preview-container">
-          <div className="preview-set">
-            <span>School Name</span>
-            <h1 title={selectedSchoolData?.name || '-'}>
-              {selectedSchoolData?.name || '-'}
-            </h1>
+          <div
+            className="preview-container"
+            style={{
+              margin: 0,
+              padding: 0,
+            }}
+          >
+            <div className="preview-set">
+              <span>School {!navigator.onLine ? 'Code' : 'Name'}</span>
+              <h1 title={selectedSchoolData?.name || '-'}>
+                {selectedSchoolData?.name || '-'}
+              </h1>
+            </div>
+            <div className="preview-set">
+              <span>Lab</span>
+              <h1>Lab {selectedLab?.label || '-'}</h1>
+            </div>
           </div>
-          <div className="preview-set">
-            <span>Lab</span>
-            <h1>{selectedLab?.label || '-'}</h1>
-          </div>
-          <div className="preview-set">
-            <span>Sr. No</span>
-            <h1>{selectedComputerSrNo?.label || '-'}</h1>
-          </div>
-          {navigator.onLine ? (
+          {inspectionStatus !== 'notStarted' && (
+            <Button
+              classNames="primary-button"
+              style={{
+                width: 'fit-content',
+                fontSize: '12px',
+                height: 'fit-content',
+                whiteSpace: 'nowrap',
+                fontFamily: 'Inter-Regular',
+                padding: '10px 15px',
+              }}
+              title="Re-run Test"
+              isDisabled={inspectionStatus === 'processing'}
+              onClick={() => startLabInspection()}
+            />
+          )}
+          {/* {navigator.onLine ? (
             <div className="preview-set">
               <span>Data Sync</span>
               <h1
@@ -597,145 +559,61 @@ const AutomatedInspection = ({
                 />
               )}
             </h1>
+          </div> */}
+        </div>
+        <div
+          className="configure-set-container"
+          style={{
+            margin: 0,
+          }}
+        >
+          <div className="configure-set-1">
+            <span>Computer Serial No.</span>
+            <Select
+              className="configure-set-dropdown"
+              options={[]}
+              value={selectedComputerSrNo}
+              onChange={(e) =>
+                onComputerSrNoChange(e || { label: '1', value: '1' })
+              }
+              isDisabled={systemInfoWithSameUuidExists}
+              styles={colourStyles}
+              placeholder="Enter Computer Serial No."
+            />
           </div>
         </div>
-        <Collapsible open header="Manual Checks">
-          <table>
-            <tr>
-              <th>Criteria</th>
-              <th>Input</th>
-            </tr>
-            {manualChecksData.map((val) => {
-              const { status } = val;
-              return (
-                <tr key={val.name}>
-                  <td>{val.name}</td>
-                  <td>
-                    <div className="status-toggle">
-                      <span
-                        onClick={() => {
-                          setManualChecksData(
-                            manualChecksData.map((check) => {
-                              if (check.key === val.key) {
-                                return {
-                                  ...check,
-                                  status: 'compatible',
-                                };
-                              }
-                              return check;
-                            })
-                          );
-                        }}
-                        className={status === 'compatible' ? 'active' : ''}
-                      >
-                        Working
-                      </span>
-                      <span
-                        onClick={() => {
-                          setManualChecksData(
-                            manualChecksData.map((check) => {
-                              if (check.key === val.key) {
-                                return {
-                                  ...check,
-                                  status: 'incompatible',
-                                };
-                              }
-                              return check;
-                            })
-                          );
-                        }}
-                        className={
-                          status !== 'compatible' ? 'disabled-active' : ''
-                        }
-                      >
-                        Disabled
-                      </span>
-                    </div>
-                  </td>
-                </tr>
-              );
-            })}
-          </table>
-        </Collapsible>
-        <Collapsible open header="Basic Checks">
-          <table>
-            <tr>
-              <th>Test Criteria</th>
-              <th>STATUS</th>
-              <th>SPECIFICATION</th>
-            </tr>
-            {inspectionMetaData.map((val) => {
-              let { status, spec } = val;
-              if (val.key === 'netspeed' && netspeed.status === 'completed') {
-                const speed =
-                  netspeed.speed > 150
-                    ? Math.floor(Math.random() * (150 - 100 + 1) + 100)
-                    : netspeed.speed;
-                spec = `${speed} Mbps`;
-                status =
-                  speed >= val.minRequirement ? 'compatible' : 'incompatible';
-              }
-              return (
-                <tr key={val.name}>
-                  <td>{val.name}</td>
-                  <td>
-                    <div className={`status-badge badge-${status}`}>
+        <table>
+          <tr>
+            <th>Sr.No</th>
+            <th>Test Criteria</th>
+            <th>Status</th>
+            <th>Specification</th>
+          </tr>
+          {inspectionMetaData.map((val, index) => {
+            const { type, status, spec } = val;
+            let customStatus: string = status;
+            if (type === 'software') {
+              customStatus = softwareApplicationLabelMap[val.status];
+            }
+            if (customStatus === 'notStarted') customStatus = 'Not Inspected';
+            if (customStatus === 'processing') customStatus = 'Inspecting';
+            return (
+              <tr key={val.name}>
+                <td>{index + 1}</td>
+                <td>{val.name}</td>
+                <td>
+                  <div className={`status-badge badge-${status}`}>
+                    {StatusBadgeIcons[status] && (
                       <img src={StatusBadgeIcons[status]} alt="" />
-                      {status}
-                    </div>
-                  </td>
-                  <td>{spec || '-'}</td>
-                </tr>
-              );
-            })}
-          </table>
-        </Collapsible>
-        {!systemInformation?.os?.distro?.includes('macOS') && (
-          <Collapsible open header="Software Applications">
-            <table>
-              <tr>
-                <th style={{ width: '50%' }}>Application</th>
-                <th>STATUS</th>
-                {/* <th>SPECIFICATION</th> */}
+                    )}
+                    {customStatus}
+                  </div>
+                </td>
+                <td>{spec || '-'}</td>
               </tr>
-              {softwareApplicationsData.map((val) => {
-                return (
-                  <tr key={val.name}>
-                    <td>{val.name}</td>
-                    <td>
-                      <div className={`status-badge badge-${val.status}`}>
-                        <img src={StatusBadgeIcons[val.status]} alt="" />
-                        {softwareApplicationLabelMap[val.status]}
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
-            </table>
-          </Collapsible>
-        )}
-        <Collapsible open header="Firewall">
-          <table>
-            <tr>
-              <th style={{ width: '50%' }}>Website&apos;s</th>
-              <th>STATUS</th>
-              {/* <th>SPECIFICATION</th> */}
-            </tr>
-            {firewallData.map((val) => {
-              return (
-                <tr key={val.name}>
-                  <td>{val.name}</td>
-                  <td>
-                    <div className={`status-badge badge-${val.status}`}>
-                      <img src={StatusBadgeIcons[val.status]} alt="" />
-                      {val.status}
-                    </div>
-                  </td>
-                </tr>
-              );
-            })}
-          </table>
-        </Collapsible>
+            );
+          })}
+        </table>
       </div>
     </div>
   );

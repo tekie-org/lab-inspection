@@ -11,12 +11,13 @@ export interface School {
 }
 
 export interface MetaData {
-  totalComputers: number | undefined;
-  totalWorkingComputers: number | undefined;
+  totalComputers: number | null;
+  totalWorkingComputers: number | null;
   selectedSpeaker: StateLabelData | null;
   selectedPowerBackup: StateLabelData | null;
   selectedPowerBackupType: StateLabelData | null;
   selectedProjector: StateLabelData | null;
   internetMode: StateLabelData | null;
-  mediaFiles: any;
+  serviceProviderType: StateLabelData | null;
+  inspectionDate: string | null;
 }
