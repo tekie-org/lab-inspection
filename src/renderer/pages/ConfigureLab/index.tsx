@@ -282,6 +282,12 @@ const ConfigureLab = () => {
           });
         });
       }
+      combinedData.push({
+        Category: 'comment',
+        Status: '-',
+        Value: userComment || '',
+        Type: 'comment',
+      });
       const csvData = arrayToCSV(combinedData);
       let fileName = `${
         selectedSchool?.label || selectedSchool?.code || ''
@@ -531,6 +537,7 @@ const ConfigureLab = () => {
     {
       Component: (
         <BasicDetails
+          systemInfoWithSameUuidExists={systemInfoWithSameUuidExists}
           metaDataAlreadyExists={metaDataAlreadyExists}
           isFetching={schoolFetching}
           schools={schools}

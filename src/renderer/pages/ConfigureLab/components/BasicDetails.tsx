@@ -33,6 +33,7 @@ const levenshteinDistance = (s: any, t: any) => {
 };
 
 const BasicDetails = ({
+  systemInfoWithSameUuidExists,
   metaDataAlreadyExists,
   isFetching,
   schools,
@@ -46,6 +47,7 @@ const BasicDetails = ({
   onChangeMetaData,
   metaDataValue,
 }: {
+  systemInfoWithSameUuidExists: boolean;
   metaDataAlreadyExists: boolean;
   isFetching: boolean;
   schools: Array<any>;
@@ -178,9 +180,9 @@ const BasicDetails = ({
             IndicatorSeparator: () => null,
           }}
           isDisabled={
-            schools && schools.length
+            (schools && schools.length
               ? !selectedSchool?.value
-              : !selectedSchool?.code
+              : !selectedSchool?.code) || systemInfoWithSameUuidExists
           }
           onChange={(e) => onLabNoChange(e)}
           value={selectedLabNo}
