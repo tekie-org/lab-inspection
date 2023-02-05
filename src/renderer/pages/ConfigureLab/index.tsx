@@ -227,18 +227,33 @@ const ConfigureLab = () => {
           Type: 'uniqueDeviceId',
         },
         {
-          Category: 'status',
-          Status: '-',
-          Value: inspectionData?.status,
-          Type: 'status',
-        },
-        {
           Category: 'inspectionDate',
           Status: '-',
           Value: new Date().toISOString(),
           Type: 'inspectionDate',
         },
       ];
+      const allIncompatibleAutomatedInspections =
+        inspectionData?.inspectionMetaData?.filter(
+          (e: any) => e.status === 'incompatible'
+        );
+      const allIncompatibleManualInspections =
+        inspectionData?.manualChecksData?.filter(
+          (e: any) => e.status === 'incompatible'
+        );
+      const inspectionStatus =
+        allIncompatibleAutomatedInspections?.length ||
+        allIncompatibleManualInspections?.length
+          ? 'incompatible'
+          : 'compatible';
+
+      combinedData.push({
+        Category: 'status',
+        Status: inspectionStatus,
+        Value: '-',
+        Type: 'status',
+      });
+
       Object.keys(metaData).forEach((configuration: any) => {
         let configurationValue: any = metaData[configuration as keyof MetaData];
         if (
