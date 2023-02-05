@@ -223,6 +223,10 @@ const LabInspectionMetaData = ({
       <div className="configure-set-1">
         <span>Inspection Date</span>
         <input
+          style={{
+            display: 'inline-block',
+            position: 'relative',
+          }}
           className="configure-set-dropdown"
           disabled={metaDataAlreadyExists}
           value={`${dateToInput(metaData.inspectionDate)}`}
