@@ -383,7 +383,7 @@ const AutomatedInspection = ({
               systemInfo?.diskLayout?.[0]?.size || arg?.space?.size || 0
             );
             const minRequirement = isWin7 ? 50 : meta.minRequirement
-            if (storageValue.raw >= meta.minRequirement)
+            if (storageValue.raw >= minRequirement)
               updatedInspection.status = 'compatible';
             updatedInspection.spec = storageValue?.label;
             break;
@@ -602,7 +602,7 @@ const AutomatedInspection = ({
             }
             if (customStatus === 'notStarted') customStatus = 'Not Inspected';
             if (customStatus === 'processing') customStatus = 'Inspecting';
-            if (val.key === 'paint3d') return '';
+            if ((val.key === 'paint3d') && isWin7) return '';
             return (
               <tr key={val.name}>
                 <td>{index + 1}</td>
