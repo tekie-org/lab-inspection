@@ -48,7 +48,17 @@ const Main = () => {
   return (
     <>
       <Header />
-      <ConfigureLab />
+      <div
+        style={{
+          height: '100%',
+          boxSizing: 'border-box',
+          display: 'flex',
+          flexDirection: 'column',
+          backgroundColor: '#F8F8F8',
+        }}
+      >
+        <ConfigureLab />
+      </div>
     </>
   );
 };

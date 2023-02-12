@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable jsx-a11y/no-static-element-interactions */
 /* eslint-disable jsx-a11y/click-events-have-key-events */
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -5,267 +6,239 @@
 /* eslint-disable react/prop-types */
 import '../ConfigureLab.scss';
 import React from 'react';
+import debounce from 'lodash/debounce';
 import Select from 'react-select';
+import {
+  displayOptions,
+  internetOptions,
+  powerBackupOptions,
+  powerBackupTypeOptions,
+  serviceProviderType,
+  speakerOptions,
+} from 'utils/configurationOptions';
 import { MetaData } from '../interface';
 import colourStyles from '../styles';
 import plusIcon from '../../../assets/plusIcon.svg';
 
+const dateToInput = function (date: any) {
+  let dateObj = new Date(date);
+  if (!date) dateObj = new Date();
+  return (
+    `${dateObj.getFullYear()}-${`0${dateObj.getMonth() + 1}`.substr(
+      -2,
+      2
+    )}-${`0${dateObj.getDate()}`.substr(-2, 2)}T` +
+    `${`0${dateObj.getHours()}`.substr(
+      -2,
+      2
+    )}:${`0${dateObj.getMinutes()}`.substr(-2, 2)}`
+  );
+};
+
 const LabInspectionMetaData = ({
+  metaDataAlreadyExists,
   onChangeMetaData,
-  setCurrentPage,
   metaDataValue,
 }: {
+  metaDataAlreadyExists: boolean;
   onChangeMetaData: (metaData: MetaData) => void;
-  setCurrentPage: (pageNumber: number) => void;
   metaDataValue: MetaData;
 }) => {
   const [metaData, setMetaData] = React.useState<MetaData>(metaDataValue);
-
   React.useEffect(() => {
     onChangeMetaData(metaData);
-  }, [metaData, onChangeMetaData]);
+  }, [metaData]);
+
+  React.useEffect(() => {
+    debounce(() => {
+      setMetaData(metaDataValue);
+    }, 1)();
+  }, [metaDataValue]);
   return (
-    <div className="configure-lab-container">
-      <div className="configure-lab-header left-aligned">
-        <h1>
-          Configure Labs
-          <span className="optional-text-muted">(Skip if addded)</span>
-        </h1>
-        <div className="breadcrumbs">
-          <span
-            onClick={() => {
-              setCurrentPage(0);
-            }}
-          >
-            Select School
-          </span>{' '}
-          / <span className="active">Configure Labs</span> /{' '}
-          <span style={{ cursor: 'default' }}>Perform Inspection</span>
+    <div className="configure-set-container">
+      <div className="configure-set-1">
+        <div style={{ display: 'flex', width: '100%' }}>
+          <div className="configure-sub-set-container">
+            <span>Total Number of Computers</span>
+            <input
+              className="configure-set-dropdown"
+              disabled={metaDataAlreadyExists}
+              value={metaData.totalComputers || ''}
+              onWheel={(event) => event.currentTarget.blur()}
+              type="number"
+              min={0}
+              onChange={(e) =>
+                setMetaData({
+                  ...metaData,
+                  totalComputers: parseInt(e.target.value, 10),
+                })
+              }
+              placeholder="Enter Total Computers"
+            />
+          </div>
+          <div className="configure-sub-set-container">
+            <span>Working Computers</span>
+            <input
+              disabled={metaDataAlreadyExists}
+              className="configure-set-dropdown"
+              value={metaData.totalWorkingComputers || ''}
+              type="number"
+              min={0}
+              onWheel={(event) => event.currentTarget.blur()}
+              onChange={(e) =>
+                setMetaData({
+                  ...metaData,
+                  totalWorkingComputers: parseInt(e.target.value, 10),
+                })
+              }
+              placeholder="Enter Total Working Computers"
+            />
+          </div>
         </div>
       </div>
-      <div className="configure-set-container">
-        <div className="configure-set-1">
-          <div style={{ display: 'flex', width: '100%' }}>
-            <div className="configure-sub-set-container">
-              <span>Total Number of Computers</span>
-              <input
-                className="configure-set-dropdown"
-                value={metaData.totalComputers}
-                type="number"
-                onChange={(e) =>
-                  setMetaData({
-                    ...metaData,
-                    totalComputers: parseInt(e.target.value, 10),
-                  })
-                }
-                placeholder="Enter Total Computers"
-              />
-            </div>
-            <div className="configure-sub-set-container">
-              <span>Working Computers</span>
-              <input
-                className="configure-set-dropdown"
-                value={metaData.totalWorkingComputers}
-                type="number"
-                onChange={(e) =>
-                  setMetaData({
-                    ...metaData,
-                    totalWorkingComputers: parseInt(e.target.value, 10),
-                  })
-                }
-                placeholder="Enter Total Working Computers"
-              />
-            </div>
+      <div className="configure-set-1">
+        <div style={{ display: 'flex', width: '100%' }}>
+          <div className="configure-sub-set-container">
+            <span>Power Backup</span>
+            <Select
+              isDisabled={metaDataAlreadyExists}
+              className="configure-set-dropdown"
+              isSearchable={false}
+              options={powerBackupOptions}
+              value={metaData.selectedPowerBackup}
+              styles={colourStyles}
+              onChange={(e) =>
+                setMetaData({
+                  ...metaData,
+                  selectedPowerBackup: e,
+                })
+              }
+              placeholder="Select an option"
+            />
+          </div>
+          <div className="configure-sub-set-container">
+            <span>Power Backup Type</span>
+            <Select
+              className="configure-set-dropdown"
+              isDisabled={
+                !metaData.selectedPowerBackup?.value ||
+                metaData.selectedPowerBackup?.value === 'no' ||
+                metaDataAlreadyExists
+              }
+              isSearchable={false}
+              options={powerBackupTypeOptions}
+              value={metaData.selectedPowerBackupType}
+              styles={colourStyles}
+              onChange={(e) =>
+                setMetaData({
+                  ...metaData,
+                  selectedPowerBackupType: e,
+                })
+              }
+              placeholder="Select an option"
+            />
           </div>
         </div>
-        <div className="configure-set-1">
-          <div style={{ display: 'flex', width: '100%' }}>
-            <div className="configure-sub-set-container">
-              <span>Power Backup</span>
-              <Select
-                className="configure-set-dropdown"
-                isSearchable={false}
-                options={[
-                  {
-                    value: 'yes',
-                    label: 'Yes',
-                  },
-                  {
-                    value: 'no',
-                    label: 'No',
-                  },
-                  {
-                    value: 'partial',
-                    label: 'Partial',
-                  },
-                ]}
-                value={metaData.selectedPowerBackup}
-                styles={colourStyles}
-                onChange={(e) =>
-                  setMetaData({
-                    ...metaData,
-                    selectedPowerBackup: e,
-                  })
-                }
-                placeholder="Select an option"
-              />
-            </div>
-            <div className="configure-sub-set-container">
-              <span>Power Backup Type</span>
-              <Select
-                className="configure-set-dropdown"
-                isSearchable={false}
-                options={[
-                  {
-                    value: 'centralised',
-                    label: 'Centralised',
-                  },
-                  {
-                    value: 'individual',
-                    label: 'Individual',
-                  },
-                ]}
-                value={metaData.selectedPowerBackupType}
-                styles={colourStyles}
-                onChange={(e) =>
-                  setMetaData({
-                    ...metaData,
-                    selectedPowerBackupType: e,
-                  })
-                }
-                placeholder="Select an option"
-              />
-            </div>
+      </div>
+      <div className="configure-set-1">
+        <div style={{ display: 'flex', width: '100%' }}>
+          <div className="configure-sub-set-container">
+            <span>Speakers</span>
+            <Select
+              isDisabled={metaDataAlreadyExists}
+              className="configure-set-dropdown"
+              isSearchable={false}
+              options={speakerOptions}
+              value={metaData.selectedSpeaker}
+              styles={colourStyles}
+              onChange={(e) =>
+                setMetaData({
+                  ...metaData,
+                  selectedSpeaker: e,
+                })
+              }
+              placeholder="Select an option"
+            />
+          </div>
+          <div className="configure-sub-set-container">
+            <span>Display</span>
+            <Select
+              isDisabled={metaDataAlreadyExists}
+              className="configure-set-dropdown"
+              isSearchable={false}
+              options={displayOptions}
+              value={metaData.selectedProjector}
+              styles={colourStyles}
+              onChange={(e) =>
+                setMetaData({
+                  ...metaData,
+                  selectedProjector: e,
+                })
+              }
+              placeholder="Select an option"
+            />
           </div>
         </div>
-        <div className="configure-set-1">
-          <div style={{ display: 'flex', width: '100%' }}>
-            <div className="configure-sub-set-container">
-              <span>Speakers</span>
-              <Select
-                className="configure-set-dropdown"
-                isSearchable={false}
-                options={[
-                  {
-                    value: 'centralisedSpeaker',
-                    label: 'Centralised Speaker',
-                  },
-                  {
-                    value: 'headphones',
-                    label: 'Headphones',
-                  },
-                  {
-                    value: 'none',
-                    label: 'None',
-                  },
-                ]}
-                value={metaData.selectedSpeaker}
-                styles={colourStyles}
-                onChange={(e) =>
-                  setMetaData({
-                    ...metaData,
-                    selectedSpeaker: e,
-                  })
-                }
-                placeholder="Select an option"
-              />
-            </div>
-            <div className="configure-sub-set-container">
-              <span>Display</span>
-              <Select
-                className="configure-set-dropdown"
-                isSearchable={false}
-                options={[
-                  {
-                    value: 'smartBoard',
-                    label: 'Smart Board',
-                  },
-                  {
-                    value: 'projector',
-                    label: 'Projector',
-                  },
-                  {
-                    value: 'none',
-                    label: 'None',
-                  },
-                ]}
-                value={metaData.selectedProjector}
-                styles={colourStyles}
-                onChange={(e) =>
-                  setMetaData({
-                    ...metaData,
-                    selectedProjector: e,
-                  })
-                }
-                placeholder="Select an option"
-              />
-            </div>
+      </div>
+      <div className="configure-set-1">
+        <div style={{ display: 'flex', width: '100%' }}>
+          <div className="configure-sub-set-container">
+            <span>Internet Mode</span>
+            <Select
+              isDisabled={metaDataAlreadyExists}
+              className="configure-set-dropdown"
+              isSearchable={false}
+              options={internetOptions}
+              value={metaData.internetMode}
+              styles={colourStyles}
+              onChange={(e) =>
+                setMetaData({
+                  ...metaData,
+                  internetMode: e,
+                })
+              }
+              placeholder="Select an option"
+            />
+          </div>
+          <div className="configure-sub-set-container">
+            <span>Service Provider Type</span>
+            <Select
+              isDisabled={metaDataAlreadyExists}
+              className="configure-set-dropdown"
+              isSearchable={false}
+              options={serviceProviderType}
+              value={metaData.serviceProviderType}
+              styles={colourStyles}
+              onChange={(e) =>
+                setMetaData({
+                  ...metaData,
+                  serviceProviderType: e,
+                })
+              }
+              placeholder="Select an option"
+            />
           </div>
         </div>
-        <div className="configure-set-1">
-          <span>Internet Mode</span>
-          <Select
-            className="configure-set-dropdown"
-            isSearchable={false}
-            options={[
-              {
-                value: 'hotspot',
-                label: 'Hotspot (Self)',
-              },
-              {
-                value: 'wifi',
-                label: 'Wifi',
-              },
-              {
-                value: 'lan',
-                label: 'LAN',
-              },
-              {
-                value: 'none',
-                label: 'None',
-              },
-            ]}
-            value={metaData.internetMode}
-            styles={colourStyles}
-            onChange={(e) =>
-              setMetaData({
-                ...metaData,
-                internetMode: e,
-              })
-            }
-            placeholder="Select an option"
-          />
-        </div>
-        {/* <div className="configure-set-1">
-          <span>Lab Photos</span>
-          <div className="configure-set-dropdown custom-set">
-            <div style={{ display: 'flex', flexWrap: 'wrap' }}>
-              {Object.values(metaData?.mediaFiles || {})?.length ? (
-                Object.values(metaData?.mediaFiles).map((file: any) => (
-                  <div className="file-preview">{file.name}</div>
-                ))
-              ) : (
-                <span className="upload-text">Upload Lab Photos Here</span>
-              )}
-            </div>
-            <button type="button">
-              <img src={plusIcon} alt="plus" />
-              Upload
-              <input
-                type="file"
-                accept=".png,.jpg,.jpeg"
-                onChange={(e) => {
-                  setMetaData({
-                    ...metaData,
-                    mediaFiles: e.target.files || [],
-                  });
-                }}
-                multiple
-                placeholder="Enter Total Computers"
-              />
-            </button>
-          </div>
-        </div> */}
+      </div>
+      <div className="configure-set-1">
+        <span>Inspection Date</span>
+        <input
+          style={{
+            display: 'inline-block',
+            position: 'relative',
+          }}
+          className="configure-set-dropdown"
+          disabled={metaDataAlreadyExists}
+          value={`${dateToInput(metaData.inspectionDate)}`}
+          type="datetime-local"
+          onChange={(e) =>
+            setMetaData({
+              ...metaData,
+              inspectionDate: e.target.value,
+            })
+          }
+          placeholder="Enter Total Computers"
+        />
       </div>
     </div>
   );

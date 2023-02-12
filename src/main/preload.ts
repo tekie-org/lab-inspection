@@ -1,6 +1,6 @@
 import { contextBridge, ipcRenderer, IpcRendererEvent } from 'electron';
 
-export type Channels = 'lab-inspection' | 'browser_window';
+export type Channels = 'lab-inspection' | 'browser_window' | 'system-uuid';
 
 const electronHandler = {
   ipcRenderer: {
