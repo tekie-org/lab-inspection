@@ -118,6 +118,7 @@ const InspectionProgress = ({
 
 const ConfigureLab = () => {
   const [currentPage, setCurrentPage] = React.useState<number>(0);
+  const [certError, setCertError] = React.useState<boolean>(false);
   const [schoolFetching, setSchoolFetching] = React.useState<boolean>(false);
   const [metaDataAlreadyExists, setMetaDataAlreadyExists] =
     React.useState<boolean>(false);
@@ -373,6 +374,9 @@ const ConfigureLab = () => {
       `,
         {}
       );
+      if (res?.errors) {
+        setCertError(res?.errors);
+      }
       const schoolList = res?.data?.schools || [];
       setSchools(schoolList);
       window.electron.ipcRenderer.sendMessage('system-uuid', [schoolList]);
@@ -555,6 +559,7 @@ const ConfigureLab = () => {
     {
       Component: (
         <BasicDetails
+          certError={certError}
           systemInfoWithSameUuidExists={systemInfoWithSameUuidExists}
           metaDataAlreadyExists={metaDataAlreadyExists}
           isFetching={schoolFetching}
@@ -897,24 +902,12 @@ const ConfigureLab = () => {
   const currentPageConfiguration = ConfigureLabPages[currentPage];
   return (
     <>
-      {!navigator.onLine && (
+      {(!navigator.onLine || certError) && (
         <div
-          className={`onlineOfflineStrip ${
-            !navigator?.onLine ? 'offlineStrip' : ''
-          }`}
+          className='onlineOfflineStrip offlineStrip'
         >
-          {navigator.onLine ? (
-            <>
-              <img src={onlineIcon} alt="inline" />
-              You are now connected to the internet.
-            </>
-          ) : (
-            <>
-              <img src={offlineIcon} alt="offline" />
-              You are currently offline, connect to the internet or download the
-              report at the end
-            </>
-          )}
+          <img src={offlineIcon} alt="offline" />
+          {!certError ? 'You are currently offline, connect to the internet or' : 'Please'} download the report at the end
         </div>
       )}
       <div 

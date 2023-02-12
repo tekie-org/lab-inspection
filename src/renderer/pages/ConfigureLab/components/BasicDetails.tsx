@@ -33,6 +33,7 @@ const levenshteinDistance = (s: any, t: any) => {
 };
 
 const BasicDetails = ({
+  certError,
   systemInfoWithSameUuidExists,
   metaDataAlreadyExists,
   isFetching,
@@ -47,6 +48,7 @@ const BasicDetails = ({
   onChangeMetaData,
   metaDataValue,
 }: {
+  certError: boolean;
   systemInfoWithSameUuidExists: boolean;
   metaDataAlreadyExists: boolean;
   isFetching: boolean;
@@ -128,6 +130,25 @@ const BasicDetails = ({
               </span>
             )
           ) : null}
+          {
+            certError ? (
+              <span
+                style={{
+                  color: 'rgba(211, 75, 87, 1)',
+                }}
+              >
+                Some Error Occured, Couldn't Fetch Schools. Please follow this <span style={{
+                  color: 'rgba(211, 75, 87, 1)',
+                  textDecoration: 'underline',
+                  cursor: 'pointer',
+                  fontStyle: 'italic',
+                }}
+                onClick={() => {
+                  window.open('https://smithgajjar.notion.site/Certificate-ERR_INVALID-Solution-be7bdb86652446f3873f4bbb4c0e8faa', '_blank');
+                }}><b>Instruction</b></span> if you are on Windows 7 to resolve certification error and try again or continue with school code and download inspection report at the end.
+              </span>
+            ) : null
+          }
         </span>
         {/* <br />
         <Select
