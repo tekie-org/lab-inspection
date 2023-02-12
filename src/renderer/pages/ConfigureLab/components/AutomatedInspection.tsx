@@ -61,7 +61,7 @@ export const automatedChecks: InspectionMetaData[] = [
     key: 'ram',
     status: 'notStarted',
     spec: '-',
-    minRequirement: 2,
+    minRequirement: 2000000000,
     type: 'basic',
   },
   {
@@ -344,7 +344,7 @@ const AutomatedInspection = ({
             const availableRamValue = formatBytes(
               systemInfo?.mem?.available || 0
             );
-            if (ramValue.raw >= meta.minRequirement)
+            if (systemInfo?.mem?.total >= meta.minRequirement)
               updatedInspection.status = 'compatible';
             updatedInspection.spec = `Total: ${ramValue?.label}; Available: ${availableRamValue.label}`;
             break;

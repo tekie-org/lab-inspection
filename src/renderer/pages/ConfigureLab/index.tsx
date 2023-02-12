@@ -696,7 +696,7 @@ const ConfigureLab = () => {
             }
             setTimeout(() => {
               setCurrentPage(currentPage + 1);
-            }, 1000);
+            }, 800);
           }}
         />,
       ],
