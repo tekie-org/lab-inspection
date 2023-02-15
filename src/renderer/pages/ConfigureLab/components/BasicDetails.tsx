@@ -80,7 +80,7 @@ const BasicDetails = ({
             className="configure-set-dropdown"
             value={selectedSchool?.code}
             type="text"
-            disabled={isFetching}
+            disabled={isFetching || systemInfoWithSameUuidExists}
             onChange={(e) => {
               const schoolDetail = (schools || []).find(
                 (school) =>
@@ -214,6 +214,11 @@ const BasicDetails = ({
           styles={colourStyles}
           placeholder="Select Or Create Lab No"
         />
+        {systemInfoWithSameUuidExists ? (
+          <span className="configure-school-name">
+            This system is already registered with the following details
+          </span>
+        ) : null}
       </div>
       {/* <div className="configure-set-1">
         <span>Computer Serial No.</span>

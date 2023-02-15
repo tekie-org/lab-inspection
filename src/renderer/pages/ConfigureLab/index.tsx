@@ -713,8 +713,12 @@ const ConfigureLab = () => {
         const selectedLabData = selectedSchoolData?.labInspections.find(
           (inspection: any) => inspection?.labNo === selectedLabNo?.label
         );
+        setSelectedComputerSrNo({
+          label: '1',
+          value: '1',
+        });
         if (selectedLabData) {
-          const systemSrNos = selectedLabData?.systems.map(
+          let systemSrNos = selectedLabData?.systems.map(
             (system: any) => system.serialNo
           ) || [0];
           const existingSystem =
@@ -728,6 +732,7 @@ const ConfigureLab = () => {
               value: `${existingSystem[0].serialNo}`,
             });
           } else {
+            if (!systemSrNos?.length) systemSrNos = [0];
             setSelectedComputerSrNo({
               label: `${(Math.max(...systemSrNos) || 0) + 1}`,
               value: `${(Math.max(...systemSrNos) || 0) + 1}`,
@@ -965,7 +970,7 @@ const ConfigureLab = () => {
                       if (!inspectionData?.inspectionMetaData?.length) return 0;
                       return (
                         ((inspectionData?.inspectionMetaData?.filter(
-                          (e: any) => e.status !== 'processing'
+                          (e: any) => (e.status !== 'processing' && e?.status !== 'notStarted')
                         ).length || 0) /
                           (inspectionData?.inspectionMetaData?.length || 0)) *
                         100
@@ -975,7 +980,7 @@ const ConfigureLab = () => {
                       if (!inspectionData?.manualChecksData?.length) return 0;
                       return (
                         ((inspectionData?.manualChecksData?.filter(
-                          (e: any) => e.status !== 'processing'
+                          (e: any) => (e.status !== 'processing' && e?.status !== 'notStarted')
                         ).length || 0) /
                           (inspectionData?.manualChecksData?.length || 0)) *
                         100

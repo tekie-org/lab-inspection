@@ -82,9 +82,9 @@ ipcMain.on('lab-inspection', async (event) => {
   const installedApps = {
     chrome: false,
     filmora: false,
-    paint: false,
+    paint: true,
     paint3d: false,
-    notepad: false,
+    notepad: true,
     msAccess: false,
   };
   let windowsApps: any[] = [];
