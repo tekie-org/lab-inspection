@@ -885,8 +885,7 @@ const ConfigureLab = () => {
                 serviceProviderType.find(
                   (e) => e.value === configuration?.serviceProviderType
                 ) || null,
-              inspectionDate:
-                configuration?.inspectionDate || new Date().toISOString(),
+              inspectionDate: new Date().toISOString(),
             };
             setMetaData(updatedData);
           } else {
