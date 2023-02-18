@@ -20,7 +20,6 @@ import {
   serviceProviderType,
   speakerOptions,
 } from 'utils/configurationOptions';
-import onlineIcon from '../../assets/online.svg';
 import offlineIcon from '../../assets/offline.svg';
 import BadgeSvg from '../../assets/badge.svg';
 import { BasicDetails, AutomatedInspection, Button } from './components';
@@ -226,7 +225,7 @@ const ConfigureLab = () => {
         {
           Category: 'uniqueDeviceId',
           Status: '-',
-          Value: inspectionData?.allSystemInfo?.system?.uuid || inspectionData?.allSystemInfo?.uuid?.os || inspectionData?.allSystemInfo?.uuid?.macs[0],
+          Value: inspectionData?.allSystemInfo?.customUUID,
           Type: 'uniqueDeviceId',
         },
         {
@@ -300,6 +299,18 @@ const ConfigureLab = () => {
           });
         });
       }
+      combinedData.push({
+        Category: 'systemInformation',
+        Status: '-',
+        Value: encodeURIComponent(
+          JSON.stringify({
+            uuid: inspectionData?.allSystemInfo?.uuid,
+            system: inspectionData?.allSystemInfo?.system,
+            os: inspectionData?.allSystemInfo?.os,
+          })
+        ),
+        Type: 'systemInformation',
+      });
       combinedData.push({
         Category: 'comment',
         Status: '-',
@@ -387,9 +398,9 @@ const ConfigureLab = () => {
     setIsQueryProcessing(true);
     const selectedSchoolData = schools.find(
       (school) =>
-        (school.id === selectedSchool?.value) ||
-        (school.name === selectedSchool?.label) ||
-        (school.code === selectedSchool?.code)
+        school.id === selectedSchool?.value ||
+        school.name === selectedSchool?.label ||
+        school.code === selectedSchool?.code
     );
     if (selectedSchoolData) {
       let selectedLabData = selectedSchoolData?.labInspections.find(
@@ -461,7 +472,7 @@ const ConfigureLab = () => {
       if (selectedLabData?.id) {
         const inspectedLabDevice = (selectedLabData?.systems || []).find(
           (system: any) =>
-            system.uniqueDeviceId === (inspectionData?.allSystemInfo?.system?.uuid || inspectionData?.allSystemInfo?.uuid?.os || inspectionData?.allSystemInfo?.uuid?.macs[0])
+            system.uniqueDeviceId === inspectionData?.allSystemInfo?.customUUID
         );
 
         let inspectionChecks = inspectedLabDevice
@@ -510,15 +521,24 @@ const ConfigureLab = () => {
             ? 'incompatible'
             : 'compatible';
 
+        const systemInformation = {
+          uuid: inspectionData?.allSystemInfo?.uuid,
+          system: inspectionData?.allSystemInfo?.system,
+          os: inspectionData?.allSystemInfo?.os,
+          cpu: inspectionData?.allSystemInfo?.cpu,
+          graphics: inspectionData?.allSystemInfo?.graphics,
+          diskLayout: inspectionData?.allSystemInfo?.diskLayout,
+          mem: inspectionData?.allSystemInfo?.mem,
+          customUUID: inspectionData?.allSystemInfo?.customUUID,
+        };
+
         const addLabDeviceQuery = `
           mutation {
             ${!inspectedLabDevice ? 'add' : 'update'}LabInspectedDevice(
               ${inspectedLabDevice ? `id: "${inspectedLabDevice?.id}"` : ''}
               input: {
                 serialNo: ${parseInt(selectedComputerSrNo?.label, 10)},
-                uniqueDeviceId: "${
-                  inspectionData?.allSystemInfo?.system?.uuid || inspectionData?.allSystemInfo?.uuid?.os || inspectionData?.allSystemInfo?.uuid?.macs[0]
-                }",
+                uniqueDeviceId: "${inspectionData?.allSystemInfo?.customUUID}",
                 inspectionDate: "${
                   metaData.inspectionDate
                     ? new Date(metaData.inspectionDate).toISOString()
@@ -529,8 +549,12 @@ const ConfigureLab = () => {
                     ? `comment: "${userComment}"`
                     : ''
                 }
+
                 inspectionMode: "${navigator.onLine ? 'online' : 'offline'}",
                 status: "${inspectionStatus}",
+                systemInformation: "${encodeURIComponent(
+                  JSON.stringify(systemInformation)
+                )}"
                 ${inspectionChecks}
               }
               inspectionConnectId: "${selectedLabData?.id}"
@@ -589,7 +613,7 @@ const ConfigureLab = () => {
         <Button
           classNames="primary-button"
           title="Save & Next"
-          key='save&Next'
+          key="save&Next"
           isDisabled={
             !selectedSchool?.code ||
             !selectedLabNo ||
@@ -636,7 +660,7 @@ const ConfigureLab = () => {
         <Button
           classNames="secondary-button"
           title="Back"
-          key='back'
+          key="back"
           isDisabled={false}
           onClick={() => setCurrentPage(currentPage - 1)}
         />,
@@ -645,7 +669,7 @@ const ConfigureLab = () => {
           title={`${
             inspectionData.status === 'notStarted' ? 'Start Inspection' : 'Next'
           }`}
-          key='startInspection'
+          key="startInspection"
           isDisabled={inspectionData.status === 'processing'}
           onClick={() => {
             if (inspectionData.status === 'notStarted') {
@@ -672,14 +696,14 @@ const ConfigureLab = () => {
         <Button
           classNames="secondary-button"
           title="Back"
-          key='manualBack'
+          key="manualBack"
           isDisabled={false}
           onClick={() => setCurrentPage(currentPage - 1)}
         />,
         <Button
           classNames="primary-button"
           isLoading={isQueryProcessing}
-          key='submit'
+          key="submit"
           title={`Submit (${
             inspectionData.manualChecksData?.filter(
               (e: any) => e.status !== 'processing'
@@ -723,8 +747,7 @@ const ConfigureLab = () => {
           ) || [0];
           const existingSystem =
             selectedLabData?.systems.filter(
-              (system: any) =>
-                system.uniqueDeviceId === (systemInfo?.system?.uuid || systemInfo?.uuid?.os || systemInfo?.uuid?.macs[0])
+              (system: any) => system.uniqueDeviceId === systemInfo?.customUUID
             ) || [];
           if (existingSystem[0]?.serialNo) {
             setSelectedComputerSrNo({
@@ -776,19 +799,20 @@ const ConfigureLab = () => {
     fetchSchools();
     window.electron.ipcRenderer.on('system-uuid', async (arg: any) => {
       setSchoolFetching(false);
-      const uuid = arg?.uuid;
       const schooList = arg?.schoolList;
       setSystemInfo(arg?.allSystemInfo);
       try {
-        localStorage.setItem('internal-log', JSON.stringify(arg))
-      } catch(e) {
-        console.log(e)
+        localStorage.setItem('internal-log', JSON.stringify(arg));
+      } catch (e) {
+        // eslint-disable-next-line no-console
+        console.log(e);
       }
       if (schooList?.length) {
         schooList.forEach((e: any) => {
           if (e?.labInspectedDevices?.length) {
             const filteredDevice = e.labInspectedDevices.filter(
-              (lab: any) => lab?.uniqueDeviceId === uuid
+              (lab: any) =>
+                lab?.uniqueDeviceId === arg?.allSystemInfo?.customUUID
             );
             if (filteredDevice.length) {
               setSystemInfoWithSameUuidExists(true);
@@ -907,19 +931,27 @@ const ConfigureLab = () => {
   return (
     <>
       {(!navigator.onLine || certError) && (
-        <div
-          className='onlineOfflineStrip offlineStrip'
-        >
+        <div className="onlineOfflineStrip offlineStrip">
           <img src={offlineIcon} alt="offline" />
-          {!certError ? 'You are currently offline, connect to the internet or' : 'Please'} download the report at the end
+          {!certError
+            ? 'You are currently offline, connect to the internet or'
+            : 'Please'}{' '}
+          download the report at the end
         </div>
       )}
-      <div 
+      <div
         onDoubleClick={() => {
           if (navigator?.clipboard && systemInfo) {
-            navigator.clipboard.writeText(JSON.stringify(systemInfo, null, 2)).then(() => {
-              alert("Internal Logs Copied")
-            });
+            navigator.clipboard
+              .writeText(JSON.stringify(systemInfo, null, 2))
+              .then(() => {
+                // eslint-disable-next-line no-alert
+                alert('Internal Logs Copied');
+                return null;
+              })
+              .catch(() => {
+                return null;
+              });
           }
         }}
         style={{
@@ -928,12 +960,12 @@ const ConfigureLab = () => {
           cursor: 'pointer',
           position: 'absolute',
           bottom: 50,
-          left: 0
+          left: 0,
         }}
-      ></div>
+      />
       <div className="configure-lab-master-container">
         <div className="configure-centerred-container">
-        {/* <ReactJson src={systemInfo} /> */}
+          {/* <ReactJson src={systemInfo} /> */}
           {currentPageConfiguration ? (
             <>
               <div className="configure-lab-container">
@@ -969,7 +1001,9 @@ const ConfigureLab = () => {
                       if (!inspectionData?.inspectionMetaData?.length) return 0;
                       return (
                         ((inspectionData?.inspectionMetaData?.filter(
-                          (e: any) => (e.status !== 'processing' && e?.status !== 'notStarted')
+                          (e: any) =>
+                            e.status !== 'processing' &&
+                            e?.status !== 'notStarted'
                         ).length || 0) /
                           (inspectionData?.inspectionMetaData?.length || 0)) *
                         100
@@ -979,7 +1013,9 @@ const ConfigureLab = () => {
                       if (!inspectionData?.manualChecksData?.length) return 0;
                       return (
                         ((inspectionData?.manualChecksData?.filter(
-                          (e: any) => (e.status !== 'processing' && e?.status !== 'notStarted')
+                          (e: any) =>
+                            e.status !== 'processing' &&
+                            e?.status !== 'notStarted'
                         ).length || 0) /
                           (inspectionData?.manualChecksData?.length || 0)) *
                         100
@@ -1104,7 +1140,9 @@ const ConfigureLab = () => {
                         .map((val: any) => {
                           const { type, status, spec } = val;
                           let customStatus: string = status;
-                          const systemDistro = systemInfo?.os?.distro || `${systemInfo?.os?.platform} 7`;
+                          const systemDistro =
+                            systemInfo?.os?.distro ||
+                            `${systemInfo?.os?.platform} 7`;
                           const isWin7 = systemDistro.indexOf('7') !== -1;
                           if (isWin7 && val.key === 'paint3d') return '';
                           if (type === 'software') {

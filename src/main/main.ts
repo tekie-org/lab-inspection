@@ -15,16 +15,18 @@ import { app, BrowserWindow, shell, ipcMain } from 'electron';
 import { autoUpdater } from 'electron-updater';
 import { promises as fs } from 'fs';
 import log from 'electron-log';
-import si, { system, uuid } from 'systeminformation';
+import si from 'systeminformation';
 import axios from 'axios';
+import checkDiskSpace from 'check-disk-space';
 import MenuBuilder from './menu';
-import checkDiskSpace from 'check-disk-space'
-const os = require('os');
-const homedir = os?.homedir();
-const username = os?.userInfo()?.username;
-
 
 import { resolveHtmlPath } from './util';
+import getSystemUUID from './getSystemUUID';
+
+const os = require('os');
+
+const homedir = os?.homedir();
+const username = os?.userInfo()?.username;
 
 const { getAllInstalledSoftware } = require('fetch-installed-software');
 
@@ -57,14 +59,14 @@ let mainWindow: BrowserWindow | null = null;
 
 ipcMain.on('system-uuid', async (event, args) => {
   try {
-    const system = await si.system();
     const all = await si.getAllData();
+    const systemUUID = await getSystemUUID(all);
     event.reply('system-uuid', {
-      uuid: system?.uuid || all?.uuid?.os || all?.uuid?.macs[0],
-      allSystemInfo: all,
+      customUUID: systemUUID,
+      allSystemInfo: { ...all, customUUID: systemUUID },
       schoolList: args[0],
     });
-  } catch(e) {
+  } catch (e) {
     event.reply('system-uuid', {
       e,
       schoolList: args[0],
@@ -77,8 +79,9 @@ ipcMain.on('lab-inspection', async (event) => {
   console.log('~~~~~~~~~~~THIS IS IN PROCESS!~~~~~~~~~~~~~');
   console.log('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~');
   const all = await si.getAllData();
+  const systemUUID = await getSystemUUID(all);
   const systemDistro = all?.os?.distro || `${all?.os?.platform} 7` || '';
-  const isWin7 = systemDistro.indexOf('7') !== -1
+  const isWin7 = systemDistro.indexOf('7') !== -1;
   const installedApps = {
     chrome: false,
     filmora: false,
@@ -91,7 +94,7 @@ ipcMain.on('lab-inspection', async (event) => {
   let filmoraDir: any[] = [];
   let space = {};
   try {
-    space = await checkDiskSpace('C:/')
+    space = await checkDiskSpace('C:/');
   } catch (e) {
     console.log(e);
   }
@@ -103,12 +106,16 @@ ipcMain.on('lab-inspection', async (event) => {
   try {
     let filmoraPath = '';
     if (username) {
-      filmoraPath = path.join('C://Users', username, '/AppData/Local/Wondershare');
+      filmoraPath = path.join(
+        'C://Users',
+        username,
+        '/AppData/Local/Wondershare'
+      );
     }
     if (homedir) {
-      filmoraPath = path.join(homedir,'/AppData/Local/Wondershare');
+      filmoraPath = path.join(homedir, '/AppData/Local/Wondershare');
     }
-    console.log(filmoraPath)
+    console.log(filmoraPath);
     filmoraDir = await fs.readdir(filmoraPath);
   } catch (e) {
     console.log(e);
@@ -149,7 +156,8 @@ ipcMain.on('lab-inspection', async (event) => {
     else firewallChecklinksStatus.push({ key: link, status: false });
   }
   event.reply('lab-inspection', {
-    systemInfo: all,
+    systemInfo: { ...all, customUUID: systemUUID },
+    uuid: systemUUID,
     space,
     installedApps,
     firewallChecklinksStatus,
@@ -169,7 +177,7 @@ if (process.env.NODE_ENV === 'production') {
 }
 
 const isDebug = true;
-  // process.env.NODE_ENV === 'development' || process.env.DEBUG_PROD === 'true';
+// process.env.NODE_ENV === 'development' || process.env.DEBUG_PROD === 'true';
 
 if (isDebug) {
   require('electron-debug')();
