@@ -337,18 +337,6 @@ const ConfigureLab = () => {
             id
             name
             code
-            labInspectedDevices {
-              id
-              serialNo
-              comment
-              uniqueDeviceId
-              status
-              inspection {
-                id
-                labName
-                labNo
-              }
-            }
             labInspections {
               id
               labName
@@ -749,6 +737,12 @@ const ConfigureLab = () => {
             selectedLabData?.systems.filter(
               (system: any) => system.uniqueDeviceId === systemInfo?.customUUID
             ) || [];
+          if (existingSystem[0]) {
+            setSystemInfoWithSameUuidExists(true);
+            if (existingSystem[0]?.comment) {
+              setUserComment(existingSystem[0]?.comment);
+            }
+          }
           if (existingSystem[0]?.serialNo) {
             setSelectedComputerSrNo({
               label: `${existingSystem[0].serialNo}`,
@@ -807,7 +801,7 @@ const ConfigureLab = () => {
         // eslint-disable-next-line no-console
         console.log(e);
       }
-      if (schooList?.length) {
+      if (schooList?.length && false) {
         schooList.forEach((e: any) => {
           if (e?.labInspectedDevices?.length) {
             const filteredDevice = e.labInspectedDevices.filter(
