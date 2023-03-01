@@ -10,7 +10,6 @@
 /* eslint-disable react/prop-types */
 import './ConfigureLab.scss';
 import React from 'react';
-// import ReactJson from 'react-json-view'
 import requestToGraphql from 'utils/requestToGraphQL';
 import {
   displayOptions,
@@ -25,6 +24,7 @@ import BadgeSvg from '../../assets/badge.svg';
 import { BasicDetails, AutomatedInspection, Button } from './components';
 import { MetaData, StateLabelData } from './interface';
 import ManualInspection, { manualChecks } from './components/ManualInspection';
+import fetchSchoolList from './utils/fetchSchools';
 import {
   automatedChecks,
   softwareApplicationLabelMap,
@@ -162,6 +162,7 @@ const ConfigureLab = () => {
     return `"${csv.join('"\n"').replace(/,/g, '","')}"`;
   }
 
+  // eslint-disable-next-line func-names
   const downloadCSV = function (data: any, csvFileName: string) {
     // Creating a Blob for having a csv file format
     // and passing the data with type
@@ -331,55 +332,13 @@ const ConfigureLab = () => {
     // You can await here
     if (navigator.onLine) {
       setSchoolFetching(true);
-      const res = await requestToGraphql(
-        `
-        query {
-          schools {
-            id
-            name
-            code
-            labInspections {
-              id
-              labName
-              labNo
-              description
-              comment
-              labConfiguration {
-                totalNumberOfComputers
-                totalNumberOfWorkingComputers
-                projectInteractivePanel
-                speakers
-                powerBackupType
-                powerBackup
-                internetConnection
-                internetSpeed
-                inspectionDate
-                serviceProviderType
-              }
-              systems {
-                id
-                serialNo
-                uniqueDeviceId
-                status
-                comment
-                inspectionChecks {
-                  name
-                  type
-                  status
-                  spec
-                }
-              }
-            }
-          }
-        }
-      `,
-        {}
-      );
+      const res = await fetchSchoolList();
       if (res?.errors) {
         setCertError(res?.errors);
       }
       const schoolList = res?.data?.schools || [];
       setSchools(schoolList);
+      // Once we have schools list get system uuid and all other information.
       window.electron.ipcRenderer.sendMessage('system-uuid', [schoolList]);
     }
   }

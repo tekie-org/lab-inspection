@@ -192,14 +192,14 @@ const LabInspectionMetaData = ({
             <input
               className="configure-set-dropdown"
               disabled={metaDataAlreadyExists}
-              value={metaData.totalComputers || ''}
+              value={metaData.internetSpeed || ''}
               onWheel={(event) => event.currentTarget.blur()}
               type="number"
               min={0}
               onChange={(e) =>
                 setMetaData({
                   ...metaData,
-                  totalComputers: parseInt(e.target.value, 10),
+                  internetSpeed: parseInt(e.target.value, 10),
                 })
               }
               placeholder="Enter Lab Internet Speed In MB"
