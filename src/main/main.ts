@@ -150,10 +150,14 @@ ipcMain.on('lab-inspection', async (event) => {
   }
   const firewallChecklinksStatus: any[] = [];
   for (const link of firewallChecklinks) {
-    const res = await axios(link);
-    if (res.status === 200)
-      firewallChecklinksStatus.push({ key: link, status: true });
-    else firewallChecklinksStatus.push({ key: link, status: false });
+    try {
+      const res = await axios(link);
+      if (res.status === 200)
+        firewallChecklinksStatus.push({ key: link, status: true });
+      else firewallChecklinksStatus.push({ key: link, status: false });
+    } catch {
+      firewallChecklinksStatus.push({ key: link, status: false });
+    }
   }
   event.reply('lab-inspection', {
     systemInfo: { ...all, customUUID: systemUUID },

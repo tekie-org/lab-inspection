@@ -43,7 +43,7 @@ export const manualChecks: ManualChecksInterface[] = [
   },
   {
     name: 'MS Access',
-    description: 'Confirm whether the Canva is working or not.',
+    description: 'Confirm whether the MS Access Software is working or not.',
     key: 'msAccess',
     status: 'processing',
     spec: '-',
@@ -51,7 +51,7 @@ export const manualChecks: ManualChecksInterface[] = [
   },
   {
     name: 'Canva',
-    description: 'Confirm whether the MS Access is Installed or not',
+    description: 'Confirm whether the Canva Website is Installed or not',
     key: 'canva',
     status: 'processing',
     spec: '-',

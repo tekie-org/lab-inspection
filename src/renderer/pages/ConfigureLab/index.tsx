@@ -38,6 +38,7 @@ const defaultMetaDataValues = {
   selectedPowerBackup: null,
   selectedProjector: null,
   internetMode: null,
+  internetSpeed: 0,
   selectedPowerBackupType: null,
   serviceProviderType: null,
   inspectionDate: new Date().toISOString(),
@@ -351,6 +352,7 @@ const ConfigureLab = () => {
                 powerBackupType
                 powerBackup
                 internetConnection
+                internetSpeed
                 inspectionDate
                 serviceProviderType
               }
@@ -399,6 +401,9 @@ const ConfigureLab = () => {
       labConfigurationString = 'labConfiguration:{';
       if (metaData?.totalComputers && metaData?.totalComputers !== 0) {
         labConfigurationString += `totalNumberOfComputers: ${metaData?.totalComputers}, `;
+      }
+      if (metaData?.internetSpeed && metaData?.internetSpeed !== 0) {
+        labConfigurationString += `internetSpeed: ${metaData?.internetSpeed}, `;
       }
       if (
         metaData?.totalWorkingComputers &&
@@ -877,6 +882,7 @@ const ConfigureLab = () => {
             setMetaDataAlreadyExists(true);
             const updatedData = {
               totalComputers: configuration?.totalNumberOfComputers || null,
+              internetSpeed: configuration?.internetSpeed || null,
               totalWorkingComputers:
                 configuration?.totalNumberOfWorkingComputers || null,
               selectedSpeaker:

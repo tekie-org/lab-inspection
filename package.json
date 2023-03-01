@@ -116,7 +116,6 @@
     "react-select": "^5.7.0",
     "sysinfo": "0.0.1",
     "systeminformation": "^5.17.3",
-    "universal-speedtest": "^2.0.6",
     "url-exist": "^3.0.1"
   },
   "devDependencies": {

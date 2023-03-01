@@ -18,7 +18,6 @@ import {
 } from 'utils/configurationOptions';
 import { MetaData } from '../interface';
 import colourStyles from '../styles';
-import plusIcon from '../../../assets/plusIcon.svg';
 
 const dateToInput = function (date: any) {
   let dateObj = new Date(date);
@@ -57,7 +56,7 @@ const LabInspectionMetaData = ({
   return (
     <div className="configure-set-container">
       <div className="configure-set-1">
-        <div style={{ display: 'flex', width: '100%' }}>
+        <div style={{ display: 'flex', width: '100%', flexWrap: 'wrap' }}>
           <div className="configure-sub-set-container">
             <span>Total Number of Computers</span>
             <input
@@ -94,10 +93,6 @@ const LabInspectionMetaData = ({
               placeholder="Enter Total Working Computers"
             />
           </div>
-        </div>
-      </div>
-      <div className="configure-set-1">
-        <div style={{ display: 'flex', width: '100%' }}>
           <div className="configure-sub-set-container">
             <span>Power Backup</span>
             <Select
@@ -138,10 +133,6 @@ const LabInspectionMetaData = ({
               placeholder="Select an option"
             />
           </div>
-        </div>
-      </div>
-      <div className="configure-set-1">
-        <div style={{ display: 'flex', width: '100%' }}>
           <div className="configure-sub-set-container">
             <span>Speakers</span>
             <Select
@@ -178,10 +169,6 @@ const LabInspectionMetaData = ({
               placeholder="Select an option"
             />
           </div>
-        </div>
-      </div>
-      <div className="configure-set-1">
-        <div style={{ display: 'flex', width: '100%' }}>
           <div className="configure-sub-set-container">
             <span>Internet Mode</span>
             <Select
@@ -198,6 +185,24 @@ const LabInspectionMetaData = ({
                 })
               }
               placeholder="Select an option"
+            />
+          </div>
+          <div className="configure-sub-set-container">
+            <span>Internet Speed (In MB)</span>
+            <input
+              className="configure-set-dropdown"
+              disabled={metaDataAlreadyExists}
+              value={metaData.totalComputers || ''}
+              onWheel={(event) => event.currentTarget.blur()}
+              type="number"
+              min={0}
+              onChange={(e) =>
+                setMetaData({
+                  ...metaData,
+                  totalComputers: parseInt(e.target.value, 10),
+                })
+              }
+              placeholder="Enter Lab Internet Speed In MB"
             />
           </div>
           <div className="configure-sub-set-container">
@@ -218,27 +223,27 @@ const LabInspectionMetaData = ({
               placeholder="Select an option"
             />
           </div>
+          <div className="configure-sub-set-container">
+            <span>Inspection Date</span>
+            <input
+              style={{
+                display: 'inline-block',
+                position: 'relative',
+              }}
+              className="configure-set-dropdown"
+              disabled={metaDataAlreadyExists}
+              value={`${dateToInput(metaData.inspectionDate)}`}
+              type="datetime-local"
+              onChange={(e) =>
+                setMetaData({
+                  ...metaData,
+                  inspectionDate: e.target.value,
+                })
+              }
+              placeholder="Enter Total Computers"
+            />
+          </div>
         </div>
-      </div>
-      <div className="configure-set-1">
-        <span>Inspection Date</span>
-        <input
-          style={{
-            display: 'inline-block',
-            position: 'relative',
-          }}
-          className="configure-set-dropdown"
-          disabled={metaDataAlreadyExists}
-          value={`${dateToInput(metaData.inspectionDate)}`}
-          type="datetime-local"
-          onChange={(e) =>
-            setMetaData({
-              ...metaData,
-              inspectionDate: e.target.value,
-            })
-          }
-          placeholder="Enter Total Computers"
-        />
       </div>
     </div>
   );

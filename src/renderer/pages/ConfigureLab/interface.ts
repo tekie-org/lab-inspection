@@ -18,6 +18,7 @@ export interface MetaData {
   selectedPowerBackupType: StateLabelData | null;
   selectedProjector: StateLabelData | null;
   internetMode: StateLabelData | null;
+  internetSpeed: number | null;
   serviceProviderType: StateLabelData | null;
   inspectionDate: string | null;
 }

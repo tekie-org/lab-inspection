@@ -13,7 +13,6 @@ import Select from 'react-select/creatable';
 // import ProcesssingIcon from '../../../assets/time.svg';
 import CompatibleIcon from '../../../assets/tick.svg';
 import IncompatibleIcon from '../../../assets/cross.svg';
-import measureConnectionSpeed from './speedTest';
 import colourStyles from '../styles';
 import Button from './Button';
 
@@ -88,14 +87,14 @@ export const automatedChecks: InspectionMetaData[] = [
     minRequirement: 100,
     type: 'basic',
   },
-  {
-    name: 'Internet Speed',
-    key: 'netspeed',
-    status: 'notStarted',
-    spec: '-',
-    minRequirement: 10,
-    type: 'basic',
-  },
+  // {
+  //   name: 'Internet Speed',
+  //   key: 'netspeed',
+  //   status: 'notStarted',
+  //   spec: '-',
+  //   minRequirement: 10,
+  //   type: 'basic',
+  // },
   {
     name: 'OS Compatibility',
     key: 'os',
@@ -326,12 +325,6 @@ const AutomatedInspection = ({
     setSystemInfo(systemInfo);
     let isInspectionStatus: InspectionStatus = 'compatible';
 
-    let netSpeed = 0;
-    if (navigator.onLine) {
-      const avgSpeed = await measureConnectionSpeed();
-      netSpeed = avgSpeed;
-    }
-
     const updatedeInspectionMetaData = inspectionMetaData.map((meta) => {
       const updatedInspection = meta;
       updatedInspection.status = 'incompatible';
@@ -410,12 +403,6 @@ const AutomatedInspection = ({
             if (parseFloat(chromeVersion) >= meta.minRequirement)
               updatedInspection.status = 'compatible';
             updatedInspection.spec = chromeVersion;
-            break;
-          }
-          case 'netspeed': {
-            updatedInspection.spec = `${netSpeed} Mbps`;
-            updatedInspection.status =
-              netSpeed > 10 ? 'compatible' : 'incompatible';
             break;
           }
           default:
