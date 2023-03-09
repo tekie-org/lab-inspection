@@ -101,3 +101,14 @@ export const serviceProviderType = [
     label: 'None',
   },
 ];
+
+export const yesNoOption = [
+  {
+    value: 'yes',
+    label: 'Yes'
+  },
+  {
+    value: 'no',
+    label: 'No'
+  },
+];

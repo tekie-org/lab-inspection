@@ -23,6 +23,9 @@ const SCHOOLS_QUERY_STRING = `
           internetSpeed
           inspectionDate
           serviceProviderType
+          sharedSystemArchSetup
+          masterSystem
+          totalNumberOfConnectedSystems
         }
         systems {
           id

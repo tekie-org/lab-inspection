@@ -18,6 +18,7 @@ import {
   powerBackupTypeOptions,
   serviceProviderType,
   speakerOptions,
+  yesNoOption,
 } from 'utils/configurationOptions';
 import offlineIcon from '../../assets/offline.svg';
 import BadgeSvg from '../../assets/badge.svg';
@@ -42,6 +43,12 @@ const defaultMetaDataValues = {
   selectedPowerBackupType: null,
   serviceProviderType: null,
   inspectionDate: new Date().toISOString(),
+  sharedSystemArchSetup: {
+    value: 'no',
+    label: 'No',
+  },
+  masterSystem: null,
+  totalNumberOfConnectedSystems: 0,
 };
 
 const InspectionProgress = ({
@@ -399,6 +406,23 @@ const ConfigureLab = () => {
           metaData?.serviceProviderType?.value || 'none'
         }, `;
       }
+      if (metaData?.sharedSystemArchSetup?.value) {
+        labConfigurationString += `sharedSystemArchSetup: ${
+          metaData?.sharedSystemArchSetup?.value || 'no'
+        }, `;
+      }
+      if ((metaData?.sharedSystemArchSetup?.value === "yes") && metaData?.masterSystem?.value) {
+        labConfigurationString += `masterSystem: ${
+          metaData?.masterSystem?.value || 'no'
+        }, `;
+      }
+      if (
+        ((metaData?.sharedSystemArchSetup?.value === "yes") && (metaData?.masterSystem?.value === "yes")) &&
+        metaData?.totalNumberOfConnectedSystems &&
+        metaData?.totalNumberOfConnectedSystems !== 0
+      ) {
+        labConfigurationString += `totalNumberOfConnectedSystems: ${metaData?.totalNumberOfConnectedSystems}, `;
+      }
       if (metaData?.inspectionDate) {
         labConfigurationString += `inspectionDate: "${
           new Date(metaData?.inspectionDate).toISOString() ||
@@ -578,6 +602,14 @@ const ConfigureLab = () => {
               !Object.keys(metaData).every((key) => {
                 if (key === 'selectedPowerBackupType') {
                   return metaData?.selectedPowerBackup?.value !== 'no'
+                    ? metaData[key as keyof MetaData]
+                    : true;
+                }  else if (key === 'totalNumberOfConnectedSystems') {
+                  return ((metaData?.sharedSystemArchSetup?.value === "yes") && (metaData?.masterSystem?.value === "yes")) 
+                    ? metaData[key as keyof MetaData]
+                    : true;
+                } else if (key === 'masterSystem') {
+                  return metaData?.sharedSystemArchSetup?.value === "yes"
                     ? metaData[key as keyof MetaData]
                     : true;
                 }
@@ -873,6 +905,13 @@ const ConfigureLab = () => {
                 serviceProviderType.find(
                   (e) => e.value === configuration?.serviceProviderType
                 ) || null,
+              sharedSystemArchSetup: yesNoOption.find(
+                  (e) => e.value === configuration?.sharedSystemArchSetup
+                ) || { value: 'no', label: 'No' },
+              masterSystem: yesNoOption.find(
+                  (e) => e.value === configuration?.masterSystem
+                ) || null,
+              totalNumberOfConnectedSystems: configuration?.totalNumberOfConnectedSystems || null,
               inspectionDate: new Date().toISOString(),
             };
             setMetaData(updatedData);
@@ -949,6 +988,14 @@ const ConfigureLab = () => {
                         (e) => {
                           if (e === 'selectedPowerBackupType') {
                             return metaData?.selectedPowerBackup?.value !== 'no'
+                              ? metaData[e as keyof MetaData]
+                              : true;
+                          } else if (e === 'totalNumberOfConnectedSystems') {
+                            return ((metaData?.sharedSystemArchSetup?.value === "yes") && (metaData?.masterSystem?.value === "yes")) 
+                              ? metaData[e as keyof MetaData]
+                              : true;
+                          } else if (e === 'masterSystem') {
+                            return metaData?.sharedSystemArchSetup?.value === "yes"
                               ? metaData[e as keyof MetaData]
                               : true;
                           }

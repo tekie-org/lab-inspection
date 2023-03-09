@@ -15,6 +15,7 @@ import {
   powerBackupTypeOptions,
   serviceProviderType,
   speakerOptions,
+  yesNoOption,
 } from 'utils/configurationOptions';
 import { MetaData } from '../interface';
 import colourStyles from '../styles';
@@ -243,6 +244,68 @@ const LabInspectionMetaData = ({
               placeholder="Enter Total Computers"
             />
           </div>
+          <div className="configure-sub-set-container">
+            <span>Is Lab Systems Shared (Ex: N-Computing or Thin-client)</span>
+            <Select
+              isDisabled={metaDataAlreadyExists}
+              className="configure-set-dropdown"
+              isSearchable={false}
+              options={yesNoOption}
+              value={metaData.sharedSystemArchSetup}
+              styles={colourStyles}
+              onChange={(e) =>
+                setMetaData({
+                  ...metaData,
+                  sharedSystemArchSetup: e,
+                })
+              }
+              placeholder="Select an option"
+            />
+          </div>
+          {
+            metaData?.sharedSystemArchSetup?.value === "yes" ? (
+              <div className="configure-sub-set-container">
+                <span>Is this Master System ?</span>
+                <Select
+                  isDisabled={metaDataAlreadyExists}
+                  className="configure-set-dropdown"
+                  isSearchable={false}
+                  options={yesNoOption}
+                  value={metaData.masterSystem}
+                  styles={colourStyles}
+                  onChange={(e) =>
+                    setMetaData({
+                      ...metaData,
+                      masterSystem: e,
+                    })
+                  }
+                  placeholder="Select an option"
+                />
+              </div>
+            ) : null
+          }
+          {
+            ((metaData?.sharedSystemArchSetup?.value === "yes") && (metaData?.masterSystem?.value === "yes")) ? (
+              <div className="configure-sub-set-container">
+                <span>Number of Systems Connected ?</span>
+                <input
+                  className="configure-set-dropdown"
+                  disabled={metaDataAlreadyExists}
+                  value={metaData.totalNumberOfConnectedSystems || ''}
+                  onWheel={(event) => event.currentTarget.blur()}
+                  type="number"
+                  min={0}
+                  onChange={(e) =>
+                    setMetaData({
+                      ...metaData,
+                      totalNumberOfConnectedSystems: parseInt(e.target.value, 10),
+                    })
+                  }
+                  placeholder="Enter Total Computers Connected"
+                />
+              </div>
+            ) : null
+          }
         </div>
       </div>
     </div>

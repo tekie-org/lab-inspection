@@ -21,4 +21,7 @@ export interface MetaData {
   internetSpeed: number | null;
   serviceProviderType: StateLabelData | null;
   inspectionDate: string | null;
+  sharedSystemArchSetup: StateLabelData | null;
+  masterSystem: StateLabelData | null;
+  totalNumberOfConnectedSystems: number | null;
 }

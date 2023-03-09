@@ -75,13 +75,6 @@ ipcMain.on('system-uuid', async (event, args) => {
 });
 
 ipcMain.on('lab-inspection', async (event) => {
-  console.log('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~');
-  console.log('~~~~~~~~~~~THIS IS IN PROCESS!~~~~~~~~~~~~~');
-  console.log('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~');
-  const all = await si.getAllData();
-  const systemUUID = await getSystemUUID(all);
-  const systemDistro = all?.os?.distro || `${all?.os?.platform} 7` || '';
-  const isWin7 = systemDistro.indexOf('7') !== -1;
   const installedApps = {
     chrome: false,
     filmora: false,
@@ -93,79 +86,95 @@ ipcMain.on('lab-inspection', async (event) => {
   let windowsApps: any[] = [];
   let filmoraDir: any[] = [];
   let space = {};
+  const firewallChecklinksStatus: any[] = [];
   try {
-    space = await checkDiskSpace('C:/');
-  } catch (e) {
-    console.log(e);
-  }
-  try {
-    windowsApps = await fs.readdir('C://Program Files/WindowsApps');
-  } catch (e) {
-    console.log(e);
-  }
-  try {
-    let filmoraPath = '';
-    if (username) {
-      filmoraPath = path.join(
-        'C://Users',
-        username,
-        '/AppData/Local/Wondershare'
-      );
+    const all = await si.getAllData();
+    const systemUUID = await getSystemUUID(all);
+    const systemDistro = all?.os?.distro || `${all?.os?.platform} 7` || '';
+    const isWin7 = systemDistro ? systemDistro.indexOf('7') !== -1 : false;
+    try {
+      space = await checkDiskSpace('C:/');
+    } catch (e) {
+      console.log(e);
     }
-    if (homedir) {
-      filmoraPath = path.join(homedir, '/AppData/Local/Wondershare');
+    try {
+      windowsApps = await fs.readdir('C://Program Files/WindowsApps');
+    } catch (e) {
+      console.log(e);
     }
-    console.log(filmoraPath);
-    filmoraDir = await fs.readdir(filmoraPath);
-  } catch (e) {
-    console.log(e);
-  }
-  if (windowsApps.length) {
-    windowsApps.forEach((e) => {
-      if (e.includes('MSPaint')) installedApps.paint3d = true;
-      if (e.includes('Paint')) installedApps.paint = true;
-      if (e.includes('Notepad')) installedApps.notepad = true;
+    try {
+      let filmoraPath = '';
+      if (username) {
+        filmoraPath = path.join(
+          'C://Users',
+          username,
+          '/AppData/Local/Wondershare'
+        );
+      }
+      if (homedir) {
+        filmoraPath = path.join(homedir, '/AppData/Local/Wondershare');
+      }
+      console.log(filmoraPath);
+      filmoraDir = await fs.readdir(filmoraPath);
+    } catch (e) {
+      console.log(e);
+    }
+    if (windowsApps.length) {
+      windowsApps.forEach((e) => {
+        if (e) {
+          if (e.includes('MSPaint')) installedApps.paint3d = true;
+          if (e.includes('Paint')) installedApps.paint = true;
+          if (e.includes('Notepad')) installedApps.notepad = true;
+        }
+      });
+    }
+    if (isWin7) {
+      installedApps.paint = true;
+      installedApps.notepad = true;
+    }
+    if (
+      filmoraDir &&
+      filmoraDir.length &&
+      filmoraDir.some((dir) => dir && dir.includes('Wondershare'))
+    )
+      installedApps.filmora = true;
+    try {
+      const programFiles = await getAllInstalledSoftware();
+      if (programFiles && programFiles.length) {
+        if (programFiles.find((e: any) => e?.DisplayName?.includes('Chrome')))
+          installedApps.chrome = programFiles.find((e: any) =>
+            e?.DisplayName?.includes('Chrome')
+          );
+      }
+    } catch {
+      console.log('error');
+    }
+    for (const link of firewallChecklinks) {
+      try {
+        const res = await axios(link);
+        if (res.status === 200)
+          firewallChecklinksStatus.push({ key: link, status: true });
+        else firewallChecklinksStatus.push({ key: link, status: false });
+      } catch {
+        firewallChecklinksStatus.push({ key: link, status: false });
+      }
+    }
+    event.reply('lab-inspection', {
+      systemInfo: { ...(all || {}), customUUID: systemUUID },
+      uuid: systemUUID,
+      space,
+      installedApps,
+      firewallChecklinksStatus,
+    });
+  } catch {
+    event.reply('lab-inspection', {
+      systemInfo: {},
+      uuid: null,
+      space,
+      installedApps,
+      firewallChecklinksStatus,
     });
   }
-  if (isWin7) {
-    installedApps.paint = true;
-    installedApps.notepad = true;
-  }
-  if (
-    filmoraDir &&
-    filmoraDir.length &&
-    filmoraDir.some((dir) => dir.includes('Wondershare'))
-  )
-    installedApps.filmora = true;
-  try {
-    const programFiles = await getAllInstalledSoftware();
-    if (programFiles && programFiles.length) {
-      if (programFiles.find((e: any) => e?.DisplayName?.includes('Chrome')))
-        installedApps.chrome = programFiles.find((e: any) =>
-          e?.DisplayName?.includes('Chrome')
-        );
-    }
-  } catch {
-    console.log('error');
-  }
-  const firewallChecklinksStatus: any[] = [];
-  for (const link of firewallChecklinks) {
-    try {
-      const res = await axios(link);
-      if (res.status === 200)
-        firewallChecklinksStatus.push({ key: link, status: true });
-      else firewallChecklinksStatus.push({ key: link, status: false });
-    } catch {
-      firewallChecklinksStatus.push({ key: link, status: false });
-    }
-  }
-  event.reply('lab-inspection', {
-    systemInfo: { ...all, customUUID: systemUUID },
-    uuid: systemUUID,
-    space,
-    installedApps,
-    firewallChecklinksStatus,
-  });
 });
 
 ipcMain.on('browser_window', async (_event, arg) => {
