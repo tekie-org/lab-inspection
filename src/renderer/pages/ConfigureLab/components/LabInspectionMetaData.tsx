@@ -188,7 +188,7 @@ const LabInspectionMetaData = ({
             />
           </div>
           <div className="configure-sub-set-container">
-            <span>Internet Speed (In MB)</span>
+            <span>Internet Speed (In MBPS)</span>
             <input
               className="configure-set-dropdown"
               disabled={metaDataAlreadyExists}
@@ -202,7 +202,7 @@ const LabInspectionMetaData = ({
                   internetSpeed: parseInt(e.target.value, 10),
                 })
               }
-              placeholder="Enter Lab Internet Speed In MB"
+              placeholder="Enter Lab Internet Speed In MBPS"
             />
           </div>
           <div className="configure-sub-set-container">

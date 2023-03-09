@@ -96,7 +96,6 @@
   },
   "dependencies": {
     "axios": "^1.2.2",
-    "base-64": "^1.0.0",
     "check-disk-space": "^3.3.1",
     "child_process": "^1.0.2",
     "crypto-js": "^4.1.1",
@@ -105,7 +104,6 @@
     "electron-updater": "^5.2.3",
     "fetch-installed-software": "0.0.7",
     "graphql": "^16.6.0",
-    "isitinstalled": "^0.1.2",
     "isomorphic-fetch": "^3.0.0",
     "lodash": "^4.17.21",
     "react": "^18.2.0",
@@ -114,9 +112,7 @@
     "react-json-view": "^1.21.3",
     "react-router-dom": "^6.4.0",
     "react-select": "^5.7.0",
-    "sysinfo": "0.0.1",
-    "systeminformation": "^5.17.3",
-    "url-exist": "^3.0.1"
+    "systeminformation": "^5.17.3"
   },
   "devDependencies": {
     "@electron/notarize": "^1.2.3",
@@ -126,7 +122,6 @@
     "@teamsupercell/typings-for-css-modules-loader": "^2.5.1",
     "@testing-library/jest-dom": "^5.16.5",
     "@testing-library/react": "^13.3.0",
-    "@types/base-64": "^1.0.0",
     "@types/crypto-js": "^4.1.1",
     "@types/isomorphic-fetch": "0.0.36",
     "@types/jest": "^28.1.7",

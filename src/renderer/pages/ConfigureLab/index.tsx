@@ -209,19 +209,19 @@ const ConfigureLab = () => {
         {
           Category: 'labNo',
           Dtatus: '-',
-          Value: selectedLabNo?.label,
+          Value: selectedLabNo?.label || '-',
           Type: 'labNo',
         },
         {
           Category: 'labName',
           Dtatus: '-',
-          Value: selectedLab?.label,
+          Value: selectedLab?.label || '-',
           Type: 'labName',
         },
         {
           Category: 'serialNo',
           Dtatus: '-',
-          Value: selectedComputerSrNo?.label,
+          Value: selectedComputerSrNo?.label || '-',
           Type: 'serialNo',
         },
         {
@@ -316,7 +316,7 @@ const ConfigureLab = () => {
       combinedData.push({
         Category: 'comment',
         Status: '-',
-        Value: userComment || '',
+        Value: encodeURIComponent(userComment) || '',
         Type: 'comment',
       });
       const csvData = arrayToCSV(combinedData);
@@ -324,6 +324,11 @@ const ConfigureLab = () => {
         selectedSchool?.label || selectedSchool?.code || ''
       }-lab_${selectedLabNo?.label}-Sr No ${selectedComputerSrNo.label}`;
       fileName = fileName.split(' ').join('_').toLowerCase();
+
+      // try {
+      //   myExcelXML(combinedData, fileName);
+      // } catch {
+      // }
       downloadCSV(csvData, fileName);
     }
   };
