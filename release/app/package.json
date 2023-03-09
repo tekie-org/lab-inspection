@@ -1,0 +1,18 @@
+{
+  "name": "tekie-lab-inspection",
+  "version": "4.7.4",
+  "description": "Lab Inspection",
+  "license": "MIT",
+  "author": {
+    "name": "Tekie",
+    "email": "support@tekie.in",
+    "url": "https://tekie.in"
+  },
+  "main": "./dist/main/main.js",
+  "scripts": {
+    "rebuild": "node -r ts-node/register ../../.erb/scripts/electron-rebuild.js",
+    "postinstall": "npm run rebuild && npm run link-modules",
+    "link-modules": "node -r ts-node/register ../../.erb/scripts/link-modules.ts"
+  },
+  "dependencies": {}
+}
