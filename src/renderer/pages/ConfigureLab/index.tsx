@@ -411,13 +411,17 @@ const ConfigureLab = () => {
           metaData?.sharedSystemArchSetup?.value || 'no'
         }, `;
       }
-      if ((metaData?.sharedSystemArchSetup?.value === "yes") && metaData?.masterSystem?.value) {
+      if (
+        metaData?.sharedSystemArchSetup?.value === 'yes' &&
+        metaData?.masterSystem?.value
+      ) {
         labConfigurationString += `masterSystem: ${
           metaData?.masterSystem?.value || 'no'
         }, `;
       }
       if (
-        ((metaData?.sharedSystemArchSetup?.value === "yes") && (metaData?.masterSystem?.value === "yes")) &&
+        metaData?.sharedSystemArchSetup?.value === 'yes' &&
+        metaData?.masterSystem?.value === 'yes' &&
         metaData?.totalNumberOfConnectedSystems &&
         metaData?.totalNumberOfConnectedSystems !== 0
       ) {
@@ -604,12 +608,15 @@ const ConfigureLab = () => {
                   return metaData?.selectedPowerBackup?.value !== 'no'
                     ? metaData[key as keyof MetaData]
                     : true;
-                }  else if (key === 'totalNumberOfConnectedSystems') {
-                  return ((metaData?.sharedSystemArchSetup?.value === "yes") && (metaData?.masterSystem?.value === "yes")) 
+                }
+                if (key === 'totalNumberOfConnectedSystems') {
+                  return metaData?.sharedSystemArchSetup?.value === 'yes' &&
+                    metaData?.masterSystem?.value === 'yes'
                     ? metaData[key as keyof MetaData]
                     : true;
-                } else if (key === 'masterSystem') {
-                  return metaData?.sharedSystemArchSetup?.value === "yes"
+                }
+                if (key === 'masterSystem') {
+                  return metaData?.sharedSystemArchSetup?.value === 'yes'
                     ? metaData[key as keyof MetaData]
                     : true;
                 }
@@ -695,21 +702,22 @@ const ConfigureLab = () => {
           key="submit"
           title={`Submit (${
             inspectionData.manualChecksData?.filter(
-              (e: any) => e.status !== 'processing'
+              (e: any) => e.status !== 'processing' && e.status !== 'notStarted'
             ).length || 0
           }/${inspectionData.manualChecksData?.length || 0})`}
           isDisabled={
             (inspectionData?.manualChecksData?.filter(
-              (e: any) => e.status !== 'processing'
+              (e: any) => e.status !== 'processing' && e.status !== 'notStarted'
             ).length || 0) !== (inspectionData?.manualChecksData?.length || 0)
           }
           onClick={async () => {
-            if (navigator.onLine) {
-              await addOrUpdateInspectionData();
-            }
-            setTimeout(() => {
-              setCurrentPage(currentPage + 1);
-            }, 800);
+            console.log(inspectionData.manualChecksData);
+            // if (navigator.onLine) {
+            //   await addOrUpdateInspectionData();
+            // }
+            // setTimeout(() => {
+            //   setCurrentPage(currentPage + 1);
+            // }, 800);
           }}
         />,
       ],
@@ -906,12 +914,14 @@ const ConfigureLab = () => {
                   (e) => e.value === configuration?.serviceProviderType
                 ) || null,
               sharedSystemArchSetup: yesNoOption.find(
-                  (e) => e.value === configuration?.sharedSystemArchSetup
-                ) || { value: 'no', label: 'No' },
-              masterSystem: yesNoOption.find(
+                (e) => e.value === configuration?.sharedSystemArchSetup
+              ) || { value: 'no', label: 'No' },
+              masterSystem:
+                yesNoOption.find(
                   (e) => e.value === configuration?.masterSystem
                 ) || null,
-              totalNumberOfConnectedSystems: configuration?.totalNumberOfConnectedSystems || null,
+              totalNumberOfConnectedSystems:
+                configuration?.totalNumberOfConnectedSystems || null,
               inspectionDate: new Date().toISOString(),
             };
             setMetaData(updatedData);
@@ -990,12 +1000,16 @@ const ConfigureLab = () => {
                             return metaData?.selectedPowerBackup?.value !== 'no'
                               ? metaData[e as keyof MetaData]
                               : true;
-                          } else if (e === 'totalNumberOfConnectedSystems') {
-                            return ((metaData?.sharedSystemArchSetup?.value === "yes") && (metaData?.masterSystem?.value === "yes")) 
+                          }
+                          if (e === 'totalNumberOfConnectedSystems') {
+                            return metaData?.sharedSystemArchSetup?.value ===
+                              'yes' && metaData?.masterSystem?.value === 'yes'
                               ? metaData[e as keyof MetaData]
                               : true;
-                          } else if (e === 'masterSystem') {
-                            return metaData?.sharedSystemArchSetup?.value === "yes"
+                          }
+                          if (e === 'masterSystem') {
+                            return metaData?.sharedSystemArchSetup?.value ===
+                              'yes'
                               ? metaData[e as keyof MetaData]
                               : true;
                           }
