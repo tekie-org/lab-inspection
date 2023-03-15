@@ -711,13 +711,12 @@ const ConfigureLab = () => {
             ).length || 0) !== (inspectionData?.manualChecksData?.length || 0)
           }
           onClick={async () => {
-            console.log(inspectionData.manualChecksData);
-            // if (navigator.onLine) {
-            //   await addOrUpdateInspectionData();
-            // }
-            // setTimeout(() => {
-            //   setCurrentPage(currentPage + 1);
-            // }, 800);
+            if (navigator.onLine) {
+              await addOrUpdateInspectionData();
+            }
+            setTimeout(() => {
+              setCurrentPage(currentPage + 1);
+            }, 800);
           }}
         />,
       ],
