@@ -63,7 +63,11 @@ const LabInspectionMetaData = ({
             <input
               className="configure-set-dropdown"
               disabled={metaDataAlreadyExists}
-              value={metaData.totalComputers || ''}
+              value={
+                !metaData.totalComputers && metaData.totalComputers !== 0
+                  ? ''
+                  : metaData.totalComputers
+              }
               onWheel={(event) => event.currentTarget.blur()}
               type="number"
               min={0}
@@ -81,7 +85,12 @@ const LabInspectionMetaData = ({
             <input
               disabled={metaDataAlreadyExists}
               className="configure-set-dropdown"
-              value={metaData.totalWorkingComputers || ''}
+              value={
+                !metaData.totalWorkingComputers &&
+                metaData.totalWorkingComputers !== 0
+                  ? ''
+                  : metaData.totalWorkingComputers
+              }
               type="number"
               min={0}
               onWheel={(event) => event.currentTarget.blur()}
@@ -193,16 +202,20 @@ const LabInspectionMetaData = ({
             <input
               className="configure-set-dropdown"
               disabled={metaDataAlreadyExists}
-              value={metaData.internetSpeed || ''}
+              value={
+                !metaData.internetSpeed && metaData.internetSpeed !== 0
+                  ? ''
+                  : metaData.internetSpeed
+              }
               onWheel={(event) => event.currentTarget.blur()}
               type="number"
               min={0}
-              onChange={(e) =>
+              onChange={(e) => {
                 setMetaData({
                   ...metaData,
                   internetSpeed: parseInt(e.target.value, 10),
-                })
-              }
+                });
+              }}
               placeholder="Enter Lab Internet Speed In MBPS"
             />
           </div>
@@ -262,50 +275,52 @@ const LabInspectionMetaData = ({
               placeholder="Select an option"
             />
           </div>
-          {
-            metaData?.sharedSystemArchSetup?.value === "yes" ? (
-              <div className="configure-sub-set-container">
-                <span>Is this Master System ?</span>
-                <Select
-                  isDisabled={metaDataAlreadyExists}
-                  className="configure-set-dropdown"
-                  isSearchable={false}
-                  options={yesNoOption}
-                  value={metaData.masterSystem}
-                  styles={colourStyles}
-                  onChange={(e) =>
-                    setMetaData({
-                      ...metaData,
-                      masterSystem: e,
-                    })
-                  }
-                  placeholder="Select an option"
-                />
-              </div>
-            ) : null
-          }
-          {
-            ((metaData?.sharedSystemArchSetup?.value === "yes") && (metaData?.masterSystem?.value === "yes")) ? (
-              <div className="configure-sub-set-container">
-                <span>Number of Systems Connected ?</span>
-                <input
-                  className="configure-set-dropdown"
-                  disabled={metaDataAlreadyExists}
-                  value={metaData.totalNumberOfConnectedSystems || ''}
-                  onWheel={(event) => event.currentTarget.blur()}
-                  type="number"
-                  min={0}
-                  onChange={(e) =>
-                    setMetaData({
-                      ...metaData,
-                      totalNumberOfConnectedSystems: parseInt(e.target.value, 10),
-                    })
-                  }
-                  placeholder="Enter Total Computers Connected"
-                />
-              </div>
-            ) : null
-          }
+          {metaData?.sharedSystemArchSetup?.value === 'yes' ? (
+            <div className="configure-sub-set-container">
+              <span>Is this Master System ?</span>
+              <Select
+                isDisabled={metaDataAlreadyExists}
+                className="configure-set-dropdown"
+                isSearchable={false}
+                options={yesNoOption}
+                value={metaData.masterSystem}
+                styles={colourStyles}
+                onChange={(e) =>
+                  setMetaData({
+                    ...metaData,
+                    masterSystem: e,
+                  })
+                }
+                placeholder="Select an option"
+              />
+            </div>
+          ) : null}
+          {metaData?.sharedSystemArchSetup?.value === 'yes' &&
+          metaData?.masterSystem?.value === 'yes' ? (
+            <div className="configure-sub-set-container">
+              <span>Number of Systems Connected ?</span>
+              <input
+                className="configure-set-dropdown"
+                disabled={metaDataAlreadyExists}
+                value={
+                  !metaData.totalNumberOfConnectedSystems &&
+                  metaData.totalNumberOfConnectedSystems !== 0
+                    ? ''
+                    : metaData.totalNumberOfConnectedSystems
+                }
+                onWheel={(event) => event.currentTarget.blur()}
+                type="number"
+                min={0}
+                onChange={(e) =>
+                  setMetaData({
+                    ...metaData,
+                    totalNumberOfConnectedSystems: parseInt(e.target.value, 10),
+                  })
+                }
+                placeholder="Enter Total Computers Connected"
+              />
+            </div>
+          ) : null}
         </div>
       </div>
     </div>

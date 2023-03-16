@@ -370,15 +370,15 @@ const ConfigureLab = () => {
       );
       let labConfigurationString = '';
       labConfigurationString = 'labConfiguration:{';
-      if (metaData?.totalComputers && metaData?.totalComputers !== 0) {
+      if (metaData?.totalComputers || metaData?.totalComputers === 0) {
         labConfigurationString += `totalNumberOfComputers: ${metaData?.totalComputers}, `;
       }
-      if (metaData?.internetSpeed && metaData?.internetSpeed !== 0) {
+      if (metaData?.internetSpeed || metaData?.internetSpeed === 0) {
         labConfigurationString += `internetSpeed: ${metaData?.internetSpeed}, `;
       }
       if (
-        metaData?.totalWorkingComputers &&
-        metaData?.totalWorkingComputers !== 0
+        metaData?.totalWorkingComputers ||
+        metaData?.totalWorkingComputers === 0
       ) {
         labConfigurationString += `totalNumberOfWorkingComputers: ${metaData?.totalWorkingComputers}, `;
       }
@@ -422,8 +422,8 @@ const ConfigureLab = () => {
       if (
         metaData?.sharedSystemArchSetup?.value === 'yes' &&
         metaData?.masterSystem?.value === 'yes' &&
-        metaData?.totalNumberOfConnectedSystems &&
-        metaData?.totalNumberOfConnectedSystems !== 0
+        (metaData?.totalNumberOfConnectedSystems ||
+          metaData?.totalNumberOfConnectedSystems === 0)
       ) {
         labConfigurationString += `totalNumberOfConnectedSystems: ${metaData?.totalNumberOfConnectedSystems}, `;
       }
@@ -612,8 +612,19 @@ const ConfigureLab = () => {
                 if (key === 'totalNumberOfConnectedSystems') {
                   return metaData?.sharedSystemArchSetup?.value === 'yes' &&
                     metaData?.masterSystem?.value === 'yes'
-                    ? metaData[key as keyof MetaData]
+                    ? metaData[key as keyof MetaData] === 0
+                      ? true
+                      : metaData[key as keyof MetaData]
                     : true;
+                }
+                if (
+                  key === 'totalWorkingComputers' ||
+                  key === 'totalComputers' ||
+                  key === 'internetSpeed'
+                ) {
+                  return metaData[key as keyof MetaData] === 0
+                    ? true
+                    : metaData[key as keyof MetaData];
                 }
                 if (key === 'masterSystem') {
                   return metaData?.sharedSystemArchSetup?.value === 'yes'
@@ -884,10 +895,10 @@ const ConfigureLab = () => {
             });
             setMetaDataAlreadyExists(true);
             const updatedData = {
-              totalComputers: configuration?.totalNumberOfComputers || null,
-              internetSpeed: configuration?.internetSpeed || null,
+              totalComputers: configuration?.totalNumberOfComputers,
+              internetSpeed: configuration?.internetSpeed,
               totalWorkingComputers:
-                configuration?.totalNumberOfWorkingComputers || null,
+                configuration?.totalNumberOfWorkingComputers,
               selectedSpeaker:
                 speakerOptions.find(
                   (e) => e.value === configuration?.speakers
@@ -920,7 +931,7 @@ const ConfigureLab = () => {
                   (e) => e.value === configuration?.masterSystem
                 ) || null,
               totalNumberOfConnectedSystems:
-                configuration?.totalNumberOfConnectedSystems || null,
+                configuration?.totalNumberOfConnectedSystems,
               inspectionDate: new Date().toISOString(),
             };
             setMetaData(updatedData);
@@ -988,8 +999,10 @@ const ConfigureLab = () => {
                   stepperProgress={{
                     0: () => {
                       let progress = 0;
+                      if (!selectedSchool?.value) return progress;
                       if (navigator.onLine && selectedSchool?.value)
                         progress += 25;
+                      if (!selectedSchool?.code) return progress;
                       if (!navigator.onLine && selectedSchool?.code)
                         progress += 25;
                       if (selectedLabNo) progress += 25;
@@ -1003,8 +1016,19 @@ const ConfigureLab = () => {
                           if (e === 'totalNumberOfConnectedSystems') {
                             return metaData?.sharedSystemArchSetup?.value ===
                               'yes' && metaData?.masterSystem?.value === 'yes'
-                              ? metaData[e as keyof MetaData]
+                              ? metaData[e as keyof MetaData] === 0
+                                ? true
+                                : metaData[e as keyof MetaData]
                               : true;
+                          }
+                          if (
+                            e === 'totalWorkingComputers' ||
+                            e === 'totalComputers' ||
+                            e === 'internetSpeed'
+                          ) {
+                            return metaData[e as keyof MetaData] === 0
+                              ? true
+                              : metaData[e as keyof MetaData];
                           }
                           if (e === 'masterSystem') {
                             return metaData?.sharedSystemArchSetup?.value ===
