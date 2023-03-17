@@ -482,10 +482,10 @@ const ConfigureLab = () => {
           inspectionData.manualChecksData.forEach((manual: any) => {
             inspectionChecks += `
               {
-                name: "${manual.name}",
+                name: "${manual.key}",
                 type: "manual",
                 status: "${manual.status}",
-                spec: "${manual.key}",
+                spec: "${manual.name}",
               }
             `;
           });
