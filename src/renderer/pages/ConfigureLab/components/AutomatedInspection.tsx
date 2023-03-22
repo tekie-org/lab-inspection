@@ -144,6 +144,14 @@ export const automatedChecks: InspectionMetaData[] = [
     type: 'firewall',
   },
   {
+    name: 'app.diagrams.net',
+    key: 'https://app.diagrams.net/',
+    status: 'notStarted',
+    minRequirement: 0,
+    spec: '-',
+    type: 'firewall',
+  },
+  {
     name: 'Tekie.in',
     key: 'https://www.tekie.in',
     status: 'notStarted',

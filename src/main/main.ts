@@ -45,6 +45,7 @@ const firewallChecklinks = [
   'https://filmora.wondershare.com',
   'https://google.com',
   'https://mail.google.com',
+  'https://app.diagrams.net/',
 ];
 
 class AppUpdater {
