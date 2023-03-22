@@ -1192,7 +1192,6 @@ const ConfigureLab = () => {
                             systemInfo?.os?.distro ||
                             `${systemInfo?.os?.platform} 7`;
                           const isWin7 = systemDistro.indexOf('7') !== -1;
-                          if (isWin7 && val.key === 'paint3d') return '';
                           if (type === 'software') {
                             customStatus =
                               softwareApplicationLabelMap[

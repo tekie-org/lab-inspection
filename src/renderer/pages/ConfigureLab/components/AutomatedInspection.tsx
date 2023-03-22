@@ -112,14 +112,6 @@ export const automatedChecks: InspectionMetaData[] = [
     type: 'basic',
   },
   {
-    name: 'Paint 3D',
-    key: 'paint3d',
-    status: 'notStarted',
-    minRequirement: 0,
-    spec: '-',
-    type: 'software',
-  },
-  {
     name: 'MS Paint',
     key: 'paint',
     status: 'notStarted',
@@ -328,8 +320,9 @@ const AutomatedInspection = ({
     const updatedeInspectionMetaData = inspectionMetaData.map((meta) => {
       const updatedInspection = meta;
       updatedInspection.status = 'incompatible';
-      const systemDistro = systemInfo?.os?.distro || `${systemInfo?.os?.platform} 7`;
-      const isWin7 = systemDistro.indexOf('7') !== -1;
+      const systemDistro =
+        systemInfo?.os?.distro || `${systemInfo?.os?.platform} 7`;
+      const isWin7System = systemDistro.indexOf('7') !== -1;
       if (meta.type === 'basic') {
         switch (meta.key) {
           case 'ram': {
@@ -375,14 +368,14 @@ const AutomatedInspection = ({
             const storageValue = formatBytes(
               systemInfo?.diskLayout?.[0]?.size || arg?.space?.size || 0
             );
-            const minRequirement = isWin7 ? 50 : meta.minRequirement
+            const minRequirement = isWin7System ? 50 : meta.minRequirement;
             if (storageValue.raw >= minRequirement)
               updatedInspection.status = 'compatible';
             updatedInspection.spec = storageValue?.label;
             break;
           }
           case 'os': {
-            if (isWin7) setIsWin7(true);
+            if (isWin7System) setIsWin7(true);
             if (
               ['7', '8', '10', '11', 'macOS'].some(
                 (value) => systemDistro.indexOf(value) !== -1
@@ -589,7 +582,6 @@ const AutomatedInspection = ({
             }
             if (customStatus === 'notStarted') customStatus = 'Not Inspected';
             if (customStatus === 'processing') customStatus = 'Inspecting';
-            if ((val.key === 'paint3d') && isWin7) return '';
             return (
               <tr key={val.name}>
                 <td>{index + 1}</td>

@@ -79,7 +79,6 @@ ipcMain.on('lab-inspection', async (event) => {
     chrome: false,
     filmora: false,
     paint: true,
-    paint3d: false,
     notepad: true,
     msAccess: false,
   };
@@ -122,7 +121,6 @@ ipcMain.on('lab-inspection', async (event) => {
     if (windowsApps.length) {
       windowsApps.forEach((e) => {
         if (e) {
-          if (e.includes('MSPaint')) installedApps.paint3d = true;
           if (e.includes('Paint')) installedApps.paint = true;
           if (e.includes('Notepad')) installedApps.notepad = true;
         }
