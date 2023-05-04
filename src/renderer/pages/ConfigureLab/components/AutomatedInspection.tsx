@@ -346,7 +346,7 @@ const AutomatedInspection = ({
           case 'processor': {
             const processorValue = {
               label: `${systemInfo?.os?.arch || ''} ${
-                systemInfo?.cpu?.brand || ''
+                systemInfo?.cpu?.brand || systemInfo?.processor || ''
               }`,
               value: systemInfo?.os?.arch,
             };

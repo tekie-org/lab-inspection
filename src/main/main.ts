@@ -62,9 +62,19 @@ ipcMain.on('system-uuid', async (event, args) => {
   try {
     const all = await si.getAllData();
     const systemUUID = await getSystemUUID(all);
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    const cpu_s = os.cpus();
+    let processor = '';
+    if (cpu_s && cpu_s.length) {
+      cpu_s.forEach((cpu: any) => {
+        if (cpu?.model) {
+          processor = cpu.model;
+        }
+      });
+    }
     event.reply('system-uuid', {
       customUUID: systemUUID,
-      allSystemInfo: { ...all, customUUID: systemUUID },
+      allSystemInfo: { ...all, customUUID: systemUUID, processor },
       schoolList: args[0],
     });
   } catch (e) {
@@ -83,6 +93,16 @@ ipcMain.on('lab-inspection', async (event) => {
     notepad: true,
     msAccess: false,
   };
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  const cpu_s = os.cpus();
+  let processor = '';
+  if (cpu_s && cpu_s.length) {
+    cpu_s.forEach((cpu: any) => {
+      if (cpu?.model) {
+        processor = cpu.model;
+      }
+    });
+  }
   let windowsApps: any[] = [];
   let filmoraDir: any[] = [];
   let space = {};
@@ -159,7 +179,7 @@ ipcMain.on('lab-inspection', async (event) => {
       }
     }
     event.reply('lab-inspection', {
-      systemInfo: { ...(all || {}), customUUID: systemUUID },
+      systemInfo: { ...(all || {}), customUUID: systemUUID, processor },
       uuid: systemUUID,
       space,
       installedApps,
