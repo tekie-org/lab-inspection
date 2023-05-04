@@ -151,6 +151,7 @@ const ConfigureLab = () => {
   const [isQueryProcessing, setIsQueryProcessing] = React.useState(false);
   const [startInspection, setStartInspection] = React.useState(false);
   const [isSyncSuccess, setSyncSuccess] = React.useState(false);
+  const [syncError, setSyncError] = React.useState('');
   const [inspectionData, setInspectionData] = React.useState<{
     inspectionMetaData: any;
     status: 'compatible' | 'processing' | 'incompatible' | 'notStarted';
@@ -357,6 +358,7 @@ const ConfigureLab = () => {
 
   const addOrUpdateInspectionData = async () => {
     setIsQueryProcessing(true);
+    let isSuccess = true;
     const selectedSchoolData = schools.find(
       (school) =>
         school.id === selectedSchool?.value ||
@@ -556,13 +558,51 @@ const ConfigureLab = () => {
           (addLabDeviceRes?.data?.addLabInspectedDevice?.id ||
             addLabDeviceRes?.data?.updateLabInspectedDevice?.id)
         ) {
+          isSuccess = true;
           setSyncSuccess(true);
+        }
+        if (addLabDeviceRes && addLabDeviceRes.errors) {
+          isSuccess = false;
+          setSyncSuccess(false);
+          setSyncError(
+            'Something went wrong, Please verify all values, internet connection or firewall and please  try again'
+          );
+          setIsQueryProcessing(false);
         }
       }
     }
-    await fetchSchools();
-    setIsQueryProcessing(false);
+    if (isSuccess) {
+      await fetchSchools();
+      setIsQueryProcessing(false);
+    }
+    return isSuccess;
   };
+
+  const checkIfAllFieldsAreFilled = () =>
+    Object.keys(metaData).every((key) => {
+      if (key === 'selectedPowerBackupType') {
+        return metaData?.selectedPowerBackup?.value !== 'no'
+          ? metaData[key as keyof MetaData]
+          : true;
+      }
+      if (
+        key === 'totalWorkingComputers' ||
+        key === 'totalComputers' ||
+        key === 'internetSpeed'
+      ) {
+        return metaData[key as keyof MetaData] === 0
+          ? true
+          : metaData[key as keyof MetaData];
+      }
+      if (
+        key === 'masterSystem' ||
+        key === 'sharedSystemArchSetup' ||
+        key === 'totalNumberOfConnectedSystems'
+      ) {
+        return true;
+      }
+      return metaData[key as keyof MetaData];
+    });
 
   const ConfigureLabPages = [
     {
@@ -602,37 +642,7 @@ const ConfigureLab = () => {
           isDisabled={
             !selectedSchool?.code ||
             !selectedLabNo ||
-            (navigator.onLine &&
-              !Object.keys(metaData).every((key) => {
-                if (key === 'selectedPowerBackupType') {
-                  return metaData?.selectedPowerBackup?.value !== 'no'
-                    ? metaData[key as keyof MetaData]
-                    : true;
-                }
-                if (key === 'totalNumberOfConnectedSystems') {
-                  return metaData?.sharedSystemArchSetup?.value === 'yes' &&
-                    metaData?.masterSystem?.value === 'yes'
-                    ? metaData[key as keyof MetaData] === 0
-                      ? true
-                      : metaData[key as keyof MetaData]
-                    : true;
-                }
-                if (
-                  key === 'totalWorkingComputers' ||
-                  key === 'totalComputers' ||
-                  key === 'internetSpeed'
-                ) {
-                  return metaData[key as keyof MetaData] === 0
-                    ? true
-                    : metaData[key as keyof MetaData];
-                }
-                if (key === 'masterSystem') {
-                  return metaData?.sharedSystemArchSetup?.value === 'yes'
-                    ? metaData[key as keyof MetaData]
-                    : true;
-                }
-                return metaData[key as keyof MetaData];
-              }))
+            (navigator.onLine && !checkIfAllFieldsAreFilled())
           }
           onClick={() => {
             setCurrentPage(currentPage + 1);
@@ -707,29 +717,54 @@ const ConfigureLab = () => {
           isDisabled={false}
           onClick={() => setCurrentPage(currentPage - 1)}
         />,
-        <Button
-          classNames="primary-button"
-          isLoading={isQueryProcessing}
-          key="submit"
-          title={`Submit (${
-            inspectionData.manualChecksData?.filter(
-              (e: any) => e.status !== 'processing' && e.status !== 'notStarted'
-            ).length || 0
-          }/${inspectionData.manualChecksData?.length || 0})`}
-          isDisabled={
-            (inspectionData?.manualChecksData?.filter(
-              (e: any) => e.status !== 'processing' && e.status !== 'notStarted'
-            ).length || 0) !== (inspectionData?.manualChecksData?.length || 0)
-          }
-          onClick={async () => {
-            if (navigator.onLine) {
-              await addOrUpdateInspectionData();
-            }
-            setTimeout(() => {
-              setCurrentPage(currentPage + 1);
-            }, 800);
+        <span
+          style={{
+            width: '100%',
+            marginLeft: '5px',
           }}
-        />,
+        >
+          <Button
+            classNames="primary-button"
+            isLoading={isQueryProcessing}
+            key="submit"
+            title={`${`Submit (${
+              inspectionData.manualChecksData?.filter(
+                (e: any) =>
+                  e.status !== 'processing' && e.status !== 'notStarted'
+              ).length || 0
+            }/${inspectionData.manualChecksData?.length || 0})`}`}
+            isDisabled={
+              (inspectionData?.manualChecksData?.filter(
+                (e: any) =>
+                  e.status !== 'processing' && e.status !== 'notStarted'
+              ).length || 0) !== (inspectionData?.manualChecksData?.length || 0)
+            }
+            onClick={async () => {
+              setSyncError('');
+              let syncSuccess = true;
+              if (navigator.onLine) {
+                syncSuccess = await addOrUpdateInspectionData();
+              }
+              if (syncSuccess) {
+                setTimeout(() => {
+                  setCurrentPage(currentPage + 1);
+                }, 800);
+              }
+            }}
+          />
+          {syncError ? (
+            <span
+              style={{
+                color: 'red',
+                fontSize: '10px',
+              }}
+            >
+              {syncError}
+            </span>
+          ) : (
+            ''
+          )}
+        </span>,
       ],
     },
   ];
@@ -956,7 +991,7 @@ const ConfigureLab = () => {
       {(!navigator.onLine || certError) && (
         <div className="onlineOfflineStrip offlineStrip">
           <img src={offlineIcon} alt="offline" />
-          {!certError
+          {!navigator.onLine
             ? 'You are currently offline, connect to the internet or'
             : 'Please'}{' '}
           download the report at the end
@@ -999,10 +1034,14 @@ const ConfigureLab = () => {
                   stepperProgress={{
                     0: () => {
                       let progress = 0;
-                      if (!selectedSchool?.value) return progress;
+                      if (!selectedSchool?.value && navigator.onLine) {
+                        return progress;
+                      }
                       if (navigator.onLine && selectedSchool?.value)
                         progress += 25;
-                      if (!selectedSchool?.code) return progress;
+                      if (!selectedSchool?.code && !navigator.onLine) {
+                        return progress;
+                      }
                       if (!navigator.onLine && selectedSchool?.code)
                         progress += 25;
                       if (selectedLabNo) progress += 25;

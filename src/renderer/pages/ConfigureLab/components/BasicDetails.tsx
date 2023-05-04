@@ -297,9 +297,7 @@ const BasicDetails = ({
             </div>
           )}
           <LabInspectionMetaData
-            metaDataAlreadyExists={
-              editMetaData ? !editMetaData : metaDataAlreadyExists
-            }
+            metaDataAlreadyExists={false}
             metaDataValue={metaDataValue}
             onChangeMetaData={(props) => onChangeMetaData(props)}
           />

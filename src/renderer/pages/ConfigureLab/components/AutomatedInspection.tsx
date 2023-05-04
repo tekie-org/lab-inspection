@@ -287,7 +287,7 @@ const AutomatedInspection = ({
     status: InspectionStatus;
   }) => void;
 }) => {
-  const [isWin7, setIsWin7] = React.useState(false);
+  const [serialNoError, setSerialNoError] = React.useState('');
   const [inspectionMetaData, setInspectionMetaData] = React.useState<
     InspectionMetaData[]
   >(
@@ -383,7 +383,6 @@ const AutomatedInspection = ({
             break;
           }
           case 'os': {
-            if (isWin7System) setIsWin7(true);
             if (
               ['7', '8', '10', '11', 'macOS'].some(
                 (value) => systemDistro.indexOf(value) !== -1
@@ -566,13 +565,32 @@ const AutomatedInspection = ({
               className="configure-set-dropdown"
               options={[]}
               value={selectedComputerSrNo}
-              onChange={(e) =>
-                onComputerSrNoChange(e || { label: '1', value: '1' })
-              }
+              onChange={(e) => {
+                if (
+                  Number.isNaN(Number(e.value)) ||
+                  Number.isNaN(parseInt(e.value, 10))
+                ) {
+                  setSerialNoError('Only Number Input is allowed');
+                } else {
+                  setSerialNoError('');
+                  onComputerSrNoChange(e || { label: '1', value: '1' });
+                }
+              }}
               isDisabled={systemInfoWithSameUuidExists}
               styles={colourStyles}
               placeholder="Enter Computer Serial No."
             />
+            {serialNoError && (
+              <span
+                style={{
+                  color: 'red',
+                  fontSize: '12px',
+                  marginTop: '5px',
+                }}
+              >
+                {serialNoError}
+              </span>
+            )}
           </div>
         </div>
         <table>

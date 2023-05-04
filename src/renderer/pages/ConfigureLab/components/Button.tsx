@@ -10,7 +10,7 @@ const Button = ({
   onClick: () => void;
   isLoading?: boolean;
   isDisabled: boolean;
-  title: string;
+  title: string | JSX.Element;
   classNames: string;
   style?: React.CSSProperties;
 }) => {
