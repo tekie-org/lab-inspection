@@ -22,6 +22,7 @@ import {
 } from 'utils/configurationOptions';
 import offlineIcon from '../../assets/offline.svg';
 import BadgeSvg from '../../assets/badge.svg';
+import ErrorImage from '../../assets/error.png';
 import { BasicDetails, AutomatedInspection, Button } from './components';
 import { MetaData, StateLabelData } from './interface';
 import ManualInspection, { manualChecks } from './components/ManualInspection';
@@ -565,7 +566,7 @@ const ConfigureLab = () => {
           isSuccess = false;
           setSyncSuccess(false);
           setSyncError(
-            'Something went wrong, Please verify all values, internet connection or firewall and please  try again'
+            'We could not sync report data. Please download the report or try submitting again.'
           );
           setIsQueryProcessing(false);
         }
@@ -741,29 +742,14 @@ const ConfigureLab = () => {
             }
             onClick={async () => {
               setSyncError('');
-              let syncSuccess = true;
               if (navigator.onLine) {
-                syncSuccess = await addOrUpdateInspectionData();
+                await addOrUpdateInspectionData();
               }
-              if (syncSuccess) {
-                setTimeout(() => {
-                  setCurrentPage(currentPage + 1);
-                }, 800);
-              }
+              setTimeout(() => {
+                setCurrentPage(currentPage + 1);
+              }, 800);
             }}
           />
-          {syncError ? (
-            <span
-              style={{
-                color: 'red',
-                fontSize: '10px',
-              }}
-            >
-              {syncError}
-            </span>
-          ) : (
-            ''
-          )}
         </span>,
       ],
     },
@@ -1129,71 +1115,120 @@ const ConfigureLab = () => {
                     paddingBottom: '100px',
                   }}
                 >
-                  <div className="configure-lab-congrats-container">
-                    <div
-                      style={{
-                        padding: '24px',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        flex: '0 1 80%',
-                      }}
-                    >
-                      <h1>
-                        Congratulations, Inspection
-                        <br />
-                        Completed.
-                      </h1>
+                  <div
+                    style={{
+                      position: 'sticky',
+                      top: '0px',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      background: 'white',
+                    }}
+                  >
+                    <div className="configure-lab-congrats-container">
                       <div
-                        className="preview-container"
-                        style={{ margin: 0, marginTop: 10 }}
+                        style={{
+                          padding: '24px',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          flex: '0 1 80%',
+                        }}
                       >
+                        <h1>
+                          Congratulations, Inspection
+                          <br />
+                          Completed.
+                        </h1>
                         <div
                           className="preview-container"
-                          style={{
-                            margin: 0,
-                            padding: 0,
-                          }}
+                          style={{ margin: 0, marginTop: 10 }}
                         >
-                          <div className="preview-set">
-                            <span>School Name</span>
-                            <h1
-                              title={
-                                navigator.onLine
-                                  ? selectedSchool?.label
-                                  : selectedSchool?.code || '-'
-                              }
-                            >
-                              {navigator.onLine
-                                ? selectedSchool?.label
-                                : selectedSchool?.code || '-'}
-                            </h1>
-                          </div>
                           <div
-                            className="preview-set"
+                            className="preview-container"
                             style={{
-                              flex: '0 0 20%',
+                              margin: 0,
+                              padding: 0,
                             }}
                           >
-                            <span>Lab No</span>
-                            <h1>Lab {selectedLabNo?.label || '-'}</h1>
-                          </div>
-                          <div className="preview-set">
-                            <span>Computer Sr No.</span>
-                            <h1>{selectedComputerSrNo?.label || '-'}</h1>
+                            <div className="preview-set">
+                              <span>School Name</span>
+                              <h1
+                                title={
+                                  navigator.onLine
+                                    ? selectedSchool?.label
+                                    : selectedSchool?.code || '-'
+                                }
+                              >
+                                {navigator.onLine
+                                  ? selectedSchool?.label
+                                  : selectedSchool?.code || '-'}
+                              </h1>
+                            </div>
+                            <div
+                              className="preview-set"
+                              style={{
+                                flex: '0 0 20%',
+                              }}
+                            >
+                              <span>Lab No</span>
+                              <h1>Lab {selectedLabNo?.label || '-'}</h1>
+                            </div>
+                            <div className="preview-set">
+                              <span>Computer Sr No.</span>
+                              <h1>{selectedComputerSrNo?.label || '-'}</h1>
+                            </div>
                           </div>
                         </div>
                       </div>
+                      <img
+                        src={BadgeSvg}
+                        alt="Badge"
+                        style={{
+                          flex: 1,
+                          position: 'absolute',
+                          bottom: 0,
+                          right: 0,
+                        }}
+                      />
                     </div>
-                    <img
-                      src={BadgeSvg}
-                      alt="Badge"
-                      style={{
-                        flex: 1,
-                        position: 'absolute',
-                        bottom: 0,
-                        right: 0,
-                      }}
-                    />
+                    {syncError ? (
+                      <div
+                        style={{
+                          display: 'flex',
+                          flexDirection: 'row',
+                          position: 'relative',
+                          alignItems: 'center',
+                          background: '#fff5f6',
+                          border: '3px solid rgb(203 97 105 / 12%)',
+                          borderRadius: '20px',
+                          width: '100%',
+                          padding: '10px',
+                          marginTop: '10px',
+                          marginBottom: '10px',
+                          justifyContent: 'space-evenly',
+                          fontFamily: 'Inter-SemiBold',
+                        }}
+                      >
+                        <img
+                          src={ErrorImage}
+                          alt="Error"
+                          style={{
+                            width: '50px',
+                            height: '50px',
+                          }}
+                        />
+                        <h3
+                          style={{
+                            color: 'crimson',
+                            fontSize: '0.9em',
+                            textTransform: 'capitalize',
+                          }}
+                        >
+                          {syncError}
+                        </h3>
+                      </div>
+                    ) : (
+                      ''
+                    )}
                   </div>
                   <div className="inspection-summary-container">
                     <div className="inspection-summary-header">

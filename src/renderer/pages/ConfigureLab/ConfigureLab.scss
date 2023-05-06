@@ -724,8 +724,8 @@ td {
   border: 3px solid rgba(140, 97, 203, 0.12);
   border-radius: 20px;
   width: 100%;
-  position: sticky;
-  top: 0px;
+  // position: sticky;
+  // top: 0px;
 
   & h1 {
     font-family: 'Inter-SemiBold';
@@ -736,7 +736,7 @@ td {
 }
 
 .inspection-summary-container {
-  margin-top: 30px;
+  margin-top: 20px;
 
   & .inspection-summary-header {
     font-size: 20px;
